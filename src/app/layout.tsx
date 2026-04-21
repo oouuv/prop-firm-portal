@@ -3,11 +3,13 @@ import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Prop Firm Portal",
-  description: "Minimal prop trading firm portal"
+  title: "Prop Firm OOUUV",
+  description: "oouuv prop trading firm portal"
 };
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default function RootLayout({
+  children
+}: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="zh-CN" suppressHydrationWarning>
       <body>
