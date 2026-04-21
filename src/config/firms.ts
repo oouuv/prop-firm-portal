@@ -1,11 +1,7 @@
-export type Firm = {
+﻿export type Firm = {
   id: string;
   name: string;
-  leverage: string;
-  maxDrawdown: string;
-  profitSplit: string;
-  evaluation: string;
-  payoutCycle: string;
+  description: string;
   tags: string[];
 };
 
@@ -14,13 +10,26 @@ export const firms: any[] = [
   {
     id: "YRM",
     name: "YRM",
+    description: "新晋平台，50K账户性价比最强平台。",
     discountCode: 'OOUUV',
     // leverage: "1:100",
     // maxDrawdown: "8% 静态",
     // profitSplit: "80%",
     // evaluation: "1-Step",
     // payoutCycle: "14 天",
-    tags: ["MT5", "Forex", "Indices"]
+    tags: ["deepchart", "Dxfeed"]
+  },
+  {
+    id: "Lucid",
+    name: "Lucid",
+    description: "大多数新手第一次出金的平台。",
+    discountCode: '😭没申请到',
+    // leverage: "1:100",
+    // maxDrawdown: "8% 静态",
+    // profitSplit: "80%",
+    // evaluation: "1-Step",
+    // payoutCycle: "14 天",
+    tags: ["TDV","Rithmic","Tradesea"]
   },
   // {
   //   id: "north-edge-funding",
