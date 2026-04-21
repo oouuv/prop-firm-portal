@@ -1,0 +1,58 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Atomic palette: neutral base + swappable accent token */
+  --neutral-0: 0 0% 100%;
+  --neutral-50: 0 0% 96.1%;
+  --neutral-900: 0 0% 9%;
+  --neutral-950: 0 0% 3.9%;
+
+  /* Change this single token to recolor primary UI globally */
+  --primary-hsl: 0 0% 0%;
+
+  --background: var(--neutral-0);
+  --foreground: var(--neutral-900);
+  --card: var(--neutral-0);
+  --card-foreground: var(--neutral-900);
+  --primary: var(--primary-hsl);
+  --primary-foreground: var(--neutral-0);
+  --muted: var(--neutral-50);
+  --muted-foreground: 0 0% 32%;
+  --border: 0 0% 89%;
+  --ring: var(--primary-hsl);
+}
+
+.dark {
+  --neutral-0: 0 0% 100%;
+  --neutral-50: 0 0% 96.1%;
+  --neutral-900: 0 0% 9%;
+  --neutral-950: 0 0% 3.9%;
+
+  --primary-hsl: 0 0% 100%;
+
+  --background: var(--neutral-950);
+  --foreground: 0 0% 92.9%;
+  --card: 0 0% 6.3%;
+  --card-foreground: 0 0% 92.9%;
+  --primary: var(--primary-hsl);
+  --primary-foreground: var(--neutral-950);
+  --muted: 0 0% 14.9%;
+  --muted-foreground: 0 0% 65.1%;
+  --border: 0 0% 14.9%;
+  --ring: var(--primary-hsl);
+}
+
+/* Example alternate brand themes:
+:root[data-theme="financial-blue"] { --primary-hsl: 217 91% 60%; }
+:root[data-theme="quant-green"] { --primary-hsl: 142 71% 45%; }
+*/
+
+* {
+  @apply border-border;
+}
+
+body {
+  @apply bg-background text-foreground antialiased;
+}
