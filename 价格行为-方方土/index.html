@@ -1,0 +1,2128 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>价格行为 — 方方土</title>
+<style>
+  :root {
+    --bg-primary: #0d1117;
+    --bg-secondary: #161b22;
+    --bg-card: #161b22;
+    --bg-card-hover: #1c2128;
+    --text-primary: #e6edf3;
+    --text-secondary: #8b949e;
+    --text-muted: #6e7681;
+    --accent-blue: #58a6ff;
+    --accent-orange: #f0883e;
+    --accent-red: #f85149;
+    --accent-green: #3fb950;
+    --accent-purple: #bc8cff;
+    --border-color: #30363d;
+    --border-radius: 12px;
+    --card-radius: 8px;
+    --header-height: 56px;
+    --max-width: 1200px;
+    --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans SC', system-ui, sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-padding-top: calc(var(--header-height) + 20px); }
+
+  body {
+    font-family: var(--font-sans);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.7;
+    font-size: 16px;
+  }
+
+  /* ===== Header / Nav ===== */
+  .header {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: var(--header-height);
+    background: rgba(13, 17, 23, 0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border-color);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    overflow-x: auto;
+  }
+  .header-inner {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    width: 100%;
+  }
+  .header-logo {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--accent-blue);
+    white-space: nowrap;
+    text-decoration: none;
+  }
+  .header-logo span { color: var(--text-primary); }
+  .header-nav {
+    display: flex;
+    gap: 4px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding: 4px 0;
+  }
+  .header-nav::-webkit-scrollbar { display: none; }
+  .header-nav a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 13px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    white-space: nowrap;
+    transition: all 0.2s;
+  }
+  .header-nav a:hover, .header-nav a.active {
+    color: var(--text-primary);
+    background: rgba(88, 166, 255, 0.12);
+  }
+
+  /* ===== Hero ===== */
+  .hero {
+    margin-top: var(--header-height);
+    padding: 80px 24px 60px;
+    text-align: center;
+    background: linear-gradient(180deg, rgba(88,166,255,0.06) 0%, transparent 100%);
+    border-bottom: 1px solid var(--border-color);
+  }
+  .hero h1 {
+    font-size: clamp(28px, 5vw, 44px);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-bottom: 12px;
+  }
+  .hero h1 em {
+    font-style: normal;
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero p {
+    color: var(--text-secondary);
+    font-size: 16px;
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+  .hero-tags {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+  }
+  .hero-tags span {
+    font-size: 12px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    background: rgba(88, 166, 255, 0.1);
+    color: var(--accent-blue);
+    border: 1px solid rgba(88, 166, 255, 0.2);
+  }
+
+  /* ===== Container ===== */
+  .container {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+  }
+
+  /* ===== Stage ===== */
+  .stage {
+    display: none;
+    margin-bottom: 48px;
+  }
+  .stage.active {
+    display: block;
+  }
+  .stage-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 8px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border-color);
+  }
+  .stage-num {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent-blue);
+    background: rgba(88, 166, 255, 0.1);
+    padding: 2px 10px;
+    border-radius: 6px;
+    white-space: nowrap;
+  }
+  .stage-title {
+    font-size: 22px;
+    font-weight: 700;
+  }
+  .stage-desc {
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin-bottom: 24px;
+    padding-left: 2px;
+  }
+
+  /* ===== Card Grid ===== */
+  .card-grid .card {
+    display: none;
+  }
+  .card-grid .card.active {
+    display: block;
+    animation: cardFadeIn 0.25s ease;
+  }
+  @keyframes cardFadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .card-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-color);
+  }
+  .card-nav button {
+    padding: 8px 24px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-card);
+    color: var(--text-primary);
+    cursor: pointer;
+    font-size: 14px;
+    font-family: inherit;
+    transition: all 0.2s;
+  }
+  .card-nav button:hover:not(:disabled) {
+    background: var(--bg-card-hover);
+    border-color: var(--accent-blue);
+    color: var(--accent-blue);
+  }
+  .card-nav button:disabled {
+    opacity: 0.3;
+    cursor: default;
+  }
+  .card-counter {
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  /* ===== Card ===== */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--card-radius);
+    padding: 20px;
+    transition: background 0.2s, border-color 0.2s;
+    break-inside: avoid;
+  }
+  .card:hover {
+    background: var(--bg-card-hover);
+    border-color: #3d4450;
+  }
+  .card-tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  .card-tag.concept { background: rgba(88, 166, 255, 0.15); color: var(--accent-blue); }
+  .card-tag.example { background: rgba(240, 136, 62, 0.15); color: var(--accent-orange); }
+  .card-tag.summary { background: rgba(188, 140, 255, 0.15); color: var(--accent-purple); }
+  .card-tag.case    { background: rgba(63, 185, 80, 0.15); color: var(--accent-green); }
+  .card-tag.warning { background: rgba(248, 81, 73, 0.15); color: var(--accent-red); }
+
+  .card-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    line-height: 1.4;
+  }
+  .card-text {
+    color: var(--text-secondary);
+    font-size: 14px;
+    line-height: 1.7;
+    margin-bottom: 8px;
+  }
+  .card-text + .card-text { margin-top: 4px; }
+  .card-text strong { color: var(--text-primary); font-weight: 600; }
+  .card-text em.highlight-blue { color: var(--accent-blue); font-style: normal; }
+  .card-text em.highlight-orange { color: var(--accent-orange); font-style: normal; }
+  .card-text em.highlight-red { color: var(--accent-red); font-style: normal; }
+  .card-text em.highlight-green { color: var(--accent-green); font-style: normal; }
+
+  .card-list {
+    list-style: none;
+    padding: 0;
+    margin: 6px 0 4px;
+  }
+  .card-list li {
+    color: var(--text-secondary);
+    font-size: 14px;
+    line-height: 1.6;
+    padding: 2px 0 2px 18px;
+    position: relative;
+  }
+  .card-list li::before {
+    content: '';
+    position: absolute;
+    left: 2px;
+    top: 11px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent-blue);
+    opacity: 0.5;
+  }
+  .card-list li.orange::before { background: var(--accent-orange); }
+  .card-list li.red::before { background: var(--accent-red); }
+  .card-list li.green::before { background: var(--accent-green); }
+  .card-list li.purple::before { background: var(--accent-purple); }
+
+  /* ===== Key Concept Highlight ===== */
+  .card.key-concept {
+    border-left: 3px solid var(--accent-blue);
+    background: rgba(88, 166, 255, 0.04);
+  }
+  .card.key-concept .card-title { color: var(--accent-blue); }
+
+  .card.key-concept.orange {
+    border-left-color: var(--accent-orange);
+    background: rgba(240, 136, 62, 0.04);
+  }
+  .card.key-concept.orange .card-title { color: var(--accent-orange); }
+
+  .card.key-concept.red {
+    border-left-color: var(--accent-red);
+    background: rgba(248, 81, 73, 0.04);
+  }
+  .card.key-concept.red .card-title { color: var(--accent-red); }
+
+  .card.key-concept.green {
+    border-left-color: var(--accent-green);
+    background: rgba(63, 185, 80, 0.04);
+  }
+  .card.key-concept.green .card-title { color: var(--accent-green); }
+
+  .card.key-concept.purple {
+    border-left-color: var(--accent-purple);
+    background: rgba(188, 140, 255, 0.04);
+  }
+  .card.key-concept.purple .card-title { color: var(--accent-purple); }
+
+  /* ===== Full-width card ===== */
+  .card.fullwidth {
+    grid-column: 1 / -1;
+  }
+
+  /* ===== Image ===== */
+  .card-figure {
+    margin: 12px 0 4px;
+    border-radius: 6px;
+    overflow: hidden;
+    cursor: zoom-in;
+    position: relative;
+  }
+  .card-figure img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 6px;
+    transition: transform 0.3s;
+  }
+  .card-figure:hover img {
+    transform: scale(1.02);
+  }
+  .card-figure figcaption {
+    font-size: 12px;
+    color: var(--text-muted);
+    padding: 6px 0 2px;
+    line-height: 1.5;
+    font-style: italic;
+  }
+
+  /* ===== Divider ===== */
+  .divider {
+    height: 1px;
+    background: var(--border-color);
+    margin: 12px 0;
+  }
+
+  /* ===== Lightbox ===== */
+  .lightbox {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.88);
+    z-index: 200;
+    justify-content: center;
+    align-items: center;
+    cursor: zoom-out;
+    padding: 32px;
+  }
+  .lightbox.active { display: flex; }
+  .lightbox img {
+    max-width: 90vw;
+    max-height: 90vh;
+    object-fit: contain;
+    border-radius: 8px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  }
+
+  /* ===== Footer ===== */
+  .footer {
+    text-align: center;
+    padding: 32px 24px;
+    color: var(--text-muted);
+    font-size: 13px;
+    border-top: 1px solid var(--border-color);
+  }
+
+  /* ===== Responsive ===== */
+  @media (max-width: 480px) {
+    .hero { padding: 48px 16px 36px; }
+    .container { padding: 24px 16px 48px; }
+    .card { padding: 16px; }
+    .stage-title { font-size: 18px; }
+    .header-inner { padding: 0 12px; }
+    .lightbox { padding: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ========== HEADER ========== -->
+<header class="header">
+  <div class="header-inner">
+    <a href="#" class="header-logo">PA <span>· 方方土</span></a>
+    <nav class="header-nav">
+      <a href="#" data-tab="ch1" class="active">信号k线&入场①</a>
+      <a href="#" data-tab="ch2">信号k线&入场②</a>
+      <a href="#" data-tab="ch3">信号k线&入场③</a>
+      <a href="#" data-tab="ch4">回调&数k线①</a>
+      <a href="#" data-tab="ch5">回调&数k线②</a>
+      <a href="#" data-tab="ch6">缺口③</a>
+      <a href="#" data-tab="ch7">市场周期</a>
+      <a href="#" data-tab="ch8">突破①-②</a>
+      <a href="#" data-tab="ch9">突破③-⑤</a>
+      <a href="#" data-tab="ch10">楔形反转</a>
+      <a href="#" data-tab="ch11">止盈目标位</a>
+      <a href="#" data-tab="ch12">止损</a>
+      <a href="#" data-tab="ch13">震荡区间&期权</a>
+    </nav>
+  </div>
+</header>
+
+<!-- ========== HERO ========== -->
+<section class="hero">
+  <h1><em>价格行为</em> —— 方方土</h1>
+  <p>以价格行为为核心的交易系统：信号K线、回调数K线、缺口、市场周期、突破、楔形反转、止盈止损</p>
+  <div class="hero-tags">
+    <span>信号K线</span>
+    <span>数K线</span>
+    <span>趋势交易</span>
+    <span>反转交易</span>
+    <span>Price Action</span>
+  </div>
+</section>
+
+<!-- ========== CONTAINER ========== -->
+<div class="container">
+
+<!-- ===== STAGE 1 : 信号k线&入场（1） ===== -->
+<section class="stage" id="ch1">
+  <div class="stage-header">
+    <span class="stage-num">第一章</span>
+    <h2 class="stage-title">信号K线 &amp; 入场（1）</h2>
+  </div>
+  <p class="stage-desc">信号K线基础——趋势K线 vs 震荡K线，背景环境的重要性，Stop Order开仓</p>
+
+  <div class="card-grid">
+
+    <!-- 趋势K线 -->
+    <div class="card">
+      <span class="card-tag concept">趋势K线</span>
+      <div class="card-title">趋势K线与震荡K线</div>
+      <p class="card-text"><strong>趋势K线：</strong>实体大，影线小。大阳线收在高位 / 大阴线收在低位。</p>
+      <p class="card-text"><strong>震荡K线：</strong>实体小，影线大。没有方向性 / 趋势性。</p>
+      <p class="card-text">趋势K线是比较好的信号K线。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/5e13565b2f29084b50fe12f278c467267eae8a37feb6af20bb932e7e09b98edf.jpg" alt="趋势K线示例" loading="lazy">
+        <figcaption>趋势K线：实体大，影线小</figcaption>
+      </figure>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/f6e264851e1b6c5ffa7d06e21d92584f99b9ff0411aff354b9921893b9fd9afc.jpg" alt="震荡K线示例" loading="lazy">
+        <figcaption>震荡K线：实体小，影线大</figcaption>
+      </figure>
+    </div>
+
+    <!-- 背景决定K线性质 -->
+    <div class="card">
+      <span class="card-tag concept">背景环境</span>
+      <div class="card-title">背景决定K线性质</div>
+      <p class="card-text">不好区分时看当前处在什么背景：</p>
+      <ul class="card-list">
+        <li>背景是趋势 → 即便K线总体很小也是趋势K线</li>
+        <li>背景是震荡区间 → 即使K线总体很大也是非趋势K线</li>
+      </ul>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/b9800ec942b603072c14d9a88d000737c48991c63816d0913a93cc16b668f585.jpg" alt="背景决定K线性质" loading="lazy">
+        <figcaption>同样K线在不同背景下意义不同</figcaption>
+      </figure>
+    </div>
+
+    <!-- 50%回调 -->
+    <div class="card">
+      <span class="card-tag concept">关键位置</span>
+      <div class="card-title">50%回调位置</div>
+      <p class="card-text">50%回调位置很重要，往往会有支撑与阻力（需要看到信号判断）。</p>
+      <p class="card-text">等信号K线再入场：尝试下破失败后收了回来，且在相对比较高的位置收盘（突破失败的信号K线，反转可开多）。</p>
+      <p class="card-text">看到信号K线后不要急着入场，等待信号K线<strong>最高点被突破</strong>。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/2c0ece1dcd8c51441884bd4f9882f306c5c365fc3f7fdf2a5eabe47822509ffe.jpg" alt="50%回调位置" loading="lazy">
+        <figcaption>50%回调位置的重要支撑与阻力</figcaption>
+      </figure>
+    </div>
+
+    <!-- 突破失败+跟随确认 -->
+    <div class="card">
+      <span class="card-tag example">案例</span>
+      <div class="card-title">假突破 &amp; 后期跟随</div>
+      <p class="card-text">连续两根大阴线收在最低，好像是强势突破了前低。是否可以做空要看<strong>后期跟随</strong>。</p>
+      <p class="card-text">后期跟随很差，没有阴线继续确认突破。大阳线收在相对高点的位置（做多信号K线），可以在这根阳线上方挂突破单买入。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/4eb8b6f7afe23cbd86431016141fd823fe30294353d55662ad091bfa940fd097.jpg" alt="突破失败案例" loading="lazy">
+        <figcaption>假突破后出现做多信号K线</figcaption>
+      </figure>
+    </div>
+
+    <!-- 环境重要性 -->
+    <div class="card key-concept">
+      <span class="card-tag concept">核心原则</span>
+      <div class="card-title">背景环境大于信号K线</div>
+      <p class="card-text">虽然两根阳线都收在高位，也确实是多头反转信号K线，但是它们所处的环境是一个<strong>非常强的下降趋势（下降窄通道）</strong>。这个时候尽管它们是信号K线，但是大概率只是下降过程中的一次小的反弹而已。</p>
+      <p class="card-text" style="font-size:15px;font-weight:600;color:var(--accent-red);">强趋势的第一次反转 80% 都会失败。</p>
+      <p class="card-text">→ <strong>只做空不做多。</strong></p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/7cdc908405d93a785f708e86ff53d922da468b460d8395cbb7d07cc78759fd22.jpg" alt="环境重要性" loading="lazy">
+        <figcaption>强下降趋势中，反转信号大概率只是反弹</figcaption>
+      </figure>
+    </div>
+
+    <!-- 好的做多信号K -->
+    <div class="card">
+      <span class="card-tag concept">反转信号</span>
+      <div class="card-title">好的反转信号K线</div>
+      <p class="card-text">在强势空头行情下，必须要看到一个<strong>非常好的大阳线</strong>，或者是连续的阳线才更加稳妥。</p>
+      <ul class="card-list">
+        <li>单独一根阳线肯定不够——至少看到连续的三根阳线</li>
+        <li>或者收盘在 EMA20 上方</li>
+      </ul>
+      <p class="card-text">底部出现巨大阳线，吞没了前面的两根阴线。这根阳线上方突破处是一个合理的做多位置。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/6a6494ec12e49ecaf6f2bc209713ba565419ebb51552d64e72acd7ea5dbf90c8.jpg" alt="好的做多反转信号" loading="lazy">
+        <figcaption>巨大阳线吞没前阴，是合理的做多位置</figcaption>
+      </figure>
+    </div>
+
+    <!-- 下降趋势中的长下影 -->
+    <div class="card">
+      <span class="card-tag warning">注意事项</span>
+      <div class="card-title">下降趋势中的长下影阴线 <span style="color:var(--accent-red);">不是</span> 做多信号K</div>
+      <p class="card-text">强趋势下反转必须要好的信号K。如果要做一般信号K，最好在其顶部挂突破单。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/ed83678662fe7e6d572c0057c286001bf12fac4abe782374e5b7e77ac65fc14f.jpg" alt="下降趋势长下影" loading="lazy">
+        <figcaption>下降趋势长下影阴线不是做多信号</figcaption>
+      </figure>
+    </div>
+
+    <!-- Always In Long -->
+    <div class="card key-concept orange">
+      <span class="card-tag concept">顺势思维</span>
+      <div class="card-title">Always In Long — 只做多不做空</div>
+      <p class="card-text">在上涨趋势中，永远保持做多思维：</p>
+      <ul class="card-list">
+        <li class="green">市价买入</li>
+        <li class="green">买突破 — Buy Stop Order</li>
+        <li class="green">买阳线收盘 — 赌趋势继续</li>
+        <li class="green">买阴线收盘 — 赌空头反转失败</li>
+      </ul>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/27f024eb73831f9cd39d0dc5b4791c66523278e29bf56e1f7a9fbd75ad700283.jpg" alt="Always In Long" loading="lazy">
+        <figcaption>上涨趋势中只做多</figcaption>
+      </figure>
+    </div>
+
+    <!-- 顺势可以不是很完美，逆势要尽可能完美 -->
+    <div class="card key-concept">
+      <span class="card-tag concept">核心原则</span>
+      <div class="card-title">顺势 vs 逆势</div>
+      <p class="card-text" style="font-size:15px;font-weight:600;"><span style="color:var(--accent-green);">顺势</span>可以不是很完美，<span style="color:var(--accent-red);">逆势</span>要尽可能的完美。</p>
+      <p class="card-text">强多头趋势下，出现一根大阴线吞没前面阳线——可能只是多头止盈所引起的。真正是否有卖出力量要看后期走势。</p>
+      <p class="card-text">后期没有良好的大阴线跟随 → 只是趋势的一次回调而已。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/1b63bd383c8d03bbb5d1ae7c6a83a12a614fe3fcaafdf761497efd34c945370c.jpg" alt="顺势逆势对比" loading="lazy">
+        <figcaption>顺势可以接受不完美，逆势必须完美</figcaption>
+      </figure>
+    </div>
+
+    <!-- 下降趋势50%反弹 -->
+    <div class="card">
+      <span class="card-tag example">三推楔形熊旗</span>
+      <div class="card-title">下降趋势50%反弹处做空</div>
+      <p class="card-text">前期空头趋势，在50%处出现了三推的楔形熊旗。看到做空信号K线后，可以在下方挂突破单做空。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/9bffe93553f3c36a41a9512e388b20b8e4878ba7b2df81e09d3d66dc6ad1ae5b.jpg" alt="三推楔形熊旗" loading="lazy">
+        <figcaption>50%反弹处的楔形熊旗</figcaption>
+      </figure>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/a4ac039dc0d58e0c8dd15d2f2fddb4f77ff8892d93a06d14912c6af7d49fc429.jpg" alt="双顶吞没形态" loading="lazy">
+        <figcaption>双顶形态 + 吞没，可以做空</figcaption>
+      </figure>
+    </div>
+
+    <!-- Stop Order -->
+    <div class="card key-concept">
+      <span class="card-tag concept">开仓方式</span>
+      <div class="card-title">Buy Stop Order — 突破单开仓</div>
+      <p class="card-text">绝大多数交易者，特别是新手更应该用 stop order 开仓。</p>
+      <p class="card-text"><strong>最高点上方一个 tick</strong> — Buy Stop Order 开仓。</p>
+      <p class="card-text">做反转需要<strong>市场同意你的观点</strong>——至少超过前面一个 tick。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/af57df9731cb60844b8a047aff6212becc6d87d9329d723cc2b4d87f8cafadde.jpg" alt="Stop Order开仓" loading="lazy">
+        <figcaption>Buy Stop Order：最高点上方1 tick挂单</figcaption>
+      </figure>
+    </div>
+
+    <!-- 下降趋势大阳线 -->
+    <div class="card">
+      <span class="card-tag example">案例</span>
+      <div class="card-title">下降趋势中的大阳线</div>
+      <p class="card-text">下降趋势中出现一根大阳线。比起收盘直接买入，在这根大阳线的最高点上方1个tick挂突破单更好。</p>
+      <p class="card-text">上涨趋势中出现大阴线，比起收盘直接卖出，在最低点下方1个tick挂突破单更好。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/ac2bc0774df717b2994ebbcb401dbe876d2517245b35f483d015047b25479e94.jpg" alt="下降趋势大阳线的stop order" loading="lazy">
+        <figcaption>大阳线最高点上方挂单，后续未触发避免亏损</figcaption>
+      </figure>
+    </div>
+
+    <!-- Tick定义 -->
+    <div class="card">
+      <span class="card-tag concept">基础知识</span>
+      <div class="card-title">Tick 与 适用性</div>
+      <ul class="card-list">
+        <li><strong>Tick：</strong>期货价格跳动的最小单位。ES: 4000 → 4000.25 / GC: 2000 → 2000.1</li>
+        <li>外汇 pip，股票大多数是 0.01 美金（1美分）</li>
+      </ul>
+      <p class="card-text"><strong>价格行为适合任何品种、任何周期。</strong></p>
+    </div>
+
+  </div>
+</section>
+
+<!-- ===== STAGE 2 : 信号k线&入场（2） ===== -->
+<section class="stage" id="ch2">
+  <div class="stage-header">
+    <span class="stage-num">第二章</span>
+    <h2 class="stage-title">信号K线 &amp; 入场（2）</h2>
+  </div>
+  <p class="stage-desc">双K线反转、孕线与吞噬线、窄通道强趋势、首次反转80%失败</p>
+
+  <div class="card-grid">
+
+    <!-- 双K线反转 -->
+    <div class="card">
+      <span class="card-tag concept">双K线反转</span>
+      <div class="card-title">双K线反转形态</div>
+      <p class="card-text">图中顶部/底部的两根K线组合，在更大时间周期上组成了良好的单K线反转信号K线。</p>
+      <p class="card-text">突破失败在第二根K线才能看清楚。</p>
+      <p class="card-text">在上方/下方挂突破单。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/e2a35d515d337a6d6cc3780dd072cf89dcfa3333f3f86edd8ab06d721ebc3d58.jpg" alt="双K线反转" loading="lazy">
+        <figcaption>双K线反转：第二根K线确认突破失败</figcaption>
+      </figure>
+    </div>
+
+    <!-- 三推楔形+双顶 -->
+    <div class="card">
+      <span class="card-tag example">案例</span>
+      <div class="card-title">三推楔形 + 双顶</div>
+      <p class="card-text">向下走了三推楔形。底部三根K线组成了一个向下突破失败的反转信号K线。</p>
+      <p class="card-text">顶部有个双顶，结合背景，最高点的十字星也可以入场。稳妥可以等大阴线收盘后，在它的下方一个tick挂突破单入场。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/8189d8460381c4188b1c723aa3ce2ae9fafb4fd1443d196bf615a512688d7ca6.jpg" alt="三推楔形+双顶" loading="lazy">
+        <figcaption>底部三推楔形 + 顶部双顶</figcaption>
+      </figure>
+    </div>
+
+    <!-- 孕线与吞噬线 -->
+    <div class="card">
+      <span class="card-tag concept">K线形态</span>
+      <div class="card-title">孕线 &amp; 吞噬线</div>
+      <ul class="card-list">
+        <li><strong>孕线：</strong>最高和最低点被前一根K线包裹</li>
+        <li><strong>吞噬线：</strong>最高和最低点将前一根K线包裹</li>
+      </ul>
+      <p class="card-text">本质都是双K线反转。重点看所在的位置——<strong>位置很关键</strong>。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/74966da7b0394104398ecb794f0cce4b9c53ffac4c5fda83a35c9a52400728ff.jpg" alt="孕线与吞噬线" loading="lazy">
+        <figcaption>孕线（左）与吞噬线（右）</figcaption>
+      </figure>
+    </div>
+
+    <!-- 背景远重要于信号K线 -->
+    <div class="card">
+      <span class="card-tag warning">案例</span>
+      <div class="card-title">吞噬线在强趋势中失去意义</div>
+      <p class="card-text">虽然多次出现空头吞噬线，但是目前多头趋势上涨极其强劲。第一个红色箭头处明显处于一个窄幅震荡空间中，因此吞噬线代表不了什么。</p>
+      <p class="card-text" style="font-weight:600;">整体背景 / 环境，远重要于信号K线。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/e7e370fadda209327465783b03198dc912b1b9bae0f4fa3a160acc68a5aee2d7.jpg" alt="吞噬线在强趋势中失效" loading="lazy">
+        <figcaption>强多头趋势中吞噬线意义不大</figcaption>
+      </figure>
+    </div>
+
+    <!-- 强突破后等距目标 -->
+    <div class="card">
+      <span class="card-tag example">等距行情</span>
+      <div class="card-title">强势突破后的等距目标位</div>
+      <p class="card-text">一根超大阳线收在最高，对之前的形态进行强势突破。<strong>强势突破后60%概率走出等距行情</strong>，后续刚好达到。</p>
+      <p class="card-text">达到目标位后出现吞噬线尝试向下反转——在这种强趋势环境下，第一次的尝试反转大概率是失败的。第一个入场点尽量不要去做，它更可能是多头达到目标位止盈所引起的回调。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/f3d872f78e658bfd6707ff7a16ebcff05744b10c82d8c6430fb2cd99810819bd.jpg" alt="强势突破等距目标" loading="lazy">
+        <figcaption>强势突破后60%概率走出等距行情</figcaption>
+      </figure>
+    </div>
+
+    <!-- 窄通道=强趋势 -->
+    <div class="card key-concept orange">
+      <span class="card-tag concept">核心概念</span>
+      <div class="card-title">窄通道 = 强趋势</div>
+      <p class="card-text">窄幅下降通道，紧贴着趋势线运行。每次反弹幅度和持续时间都很短。</p>
+      <p class="card-text" style="font-size:15px;font-weight:600;color:var(--accent-red);">窄通道的第一次尝试反转 80% 概率会失败</p>
+      <p class="card-text">尽管有几次突破了通道上边，但先不要介入。尽管连续两根阳线——等待回测后有更好的信号K线。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/1706c86ce33d6d3e00ba4d1383f8b5e816f3b494d4e17ba839fde4e20f7f7346.jpg" alt="窄通道强趋势" loading="lazy">
+        <figcaption>窄通道：反弹幅度小持续时间短</figcaption>
+      </figure>
+    </div>
+
+    <!-- 更强下降趋势 -->
+    <div class="card">
+      <span class="card-tag example">更强趋势</span>
+      <div class="card-title">更强劲的下降趋势</div>
+      <p class="card-text">更加强劲的下降趋势，反转也更加艰难。底部可以看作头肩底。</p>
+      <p class="card-text">可能在50号K线处通道上边被突破了。但<strong>第一次突破成功概率很低</strong>，先不要入场。</p>
+      <p class="card-text">强趋势下需要好的信号K线（54号），或者等形态走完入场（70号）。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/ff54fb080815a260f2bf230503373abaf5f05fbb30da1b1a35bcb8a45f18474e.jpg" alt="更强劲的下降趋势" loading="lazy">
+        <figcaption>强趋势需要更好的信号K线或更完整的形态</figcaption>
+      </figure>
+    </div>
+
+    <!-- V形反转 -->
+    <div class="card">
+      <span class="card-tag warning">小概率事件</span>
+      <div class="card-title">V形反转</div>
+      <p class="card-text">前期强劲的上涨窄通道，渐渐开始走弱。但总的来说还是一个上涨窄通道，第一次被反转的概率还是不大。</p>
+      <p class="card-text">但是有时候一些小概率的事件会发生——所谓的<strong>V形反转</strong>（无结构，直接反转）。</p>
+      <p class="card-text">看到连续阴线收在 EMA20 下方，不要期待过多反弹，可以追空。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/ba5f77f9183334aceb453245cc633f6084b1446aa885afc8db2ab3a3e423d050.jpg" alt="V形反转" loading="lazy">
+        <figcaption>小概率事件：V形反转</figcaption>
+      </figure>
+    </div>
+
+  </div>
+</section>
+
+<!-- ===== STAGE 3 : 信号k线&入场（3） ===== -->
+<section class="stage" id="ch3">
+  <div class="stage-header">
+    <span class="stage-num">第三章</span>
+    <h2 class="stage-title">信号K线 &amp; 入场（3）</h2>
+  </div>
+  <p class="stage-desc">背景与信号K线都不好时如何交易，三推楔形反转，MM目标位</p>
+
+  <div class="card-grid">
+
+    <!-- 反转需要好背景+好信号 -->
+    <div class="card key-concept">
+      <span class="card-tag concept">核心原则</span>
+      <div class="card-title">反转 = 好的背景 + 好的信号K线</div>
+      <p class="card-text">如果背景和信号K线都不好，如何交易？</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/d582711f5afdef3ae8db1b92b853484deac5be79a27e0053c4fca12bdd44a9a6.jpg" alt="反转需要好背景+好信号" loading="lazy">
+        <figcaption>背景+信号都不好时不要轻易交易</figcaption>
+      </figure>
+    </div>
+
+    <!-- 顶部双顶做空 -->
+    <div class="card">
+      <span class="card-tag example">案例</span>
+      <div class="card-title">双顶形态做空</div>
+      <p class="card-text">前期几次尝试反转，但都延续了多头趋势。第一次下跌跟随很差——更大概率只是震荡区间中的一段。</p>
+      <p class="card-text">再次上涨至前高处时收盘未能收在前高上方，且出现了体积巨大且收在最低的信号K线。在其下方挂突破单做空。</p>
+      <p class="card-text">盈亏比很好，双顶形态如果能跌破颈线，后期可以期待<strong>等距行情</strong>。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/e5ee650db6a639811772ca0739696948d6ce527b5fad2a3e76a97abb59d002e8.jpg" alt="双顶做空案例" loading="lazy">
+        <figcaption>双顶跌破颈线后可期待等距行情</figcaption>
+      </figure>
+    </div>
+
+    <!-- 差背景+差信号 -->
+    <div class="card">
+      <span class="card-tag concept">综合分析</span>
+      <div class="card-title">背景 + 信号K线双角度分析</div>
+      <p class="card-text"><strong>背景：</strong>连续阳线且收在高位，强势上涨趋势。上涨概率80%。</p>
+      <p class="card-text"><strong>信号K线：</strong>实体很小影线很长，几乎是一个十字星，且未能收在低位。</p>
+      <p class="card-text" style="font-size:15px;font-weight:600;color:var(--accent-red);">糟糕背景 + 糟糕信号K线 = 胜率低</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/33b14bc091f013f3fbb9454fec2e7e2ebd7b070d8e97a419999f70dc752966a5.jpg" alt="差背景+差信号" loading="lazy">
+        <figcaption>差背景+差信号=胜率低</figcaption>
+      </figure>
+    </div>
+
+    <!-- 差背景+差信号的解决办法 -->
+    <div class="card key-concept orange">
+      <span class="card-tag concept">解决办法</span>
+      <div class="card-title">差背景+差信号 — 解决方法</div>
+      <p class="card-text">下方挂买单——赌空头失败。</p>
+      <p class="card-text">缺点：盈亏比差。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/6a7b5519fb828a67ddc1b3a0d9a87cfd0d28696e693b5dac2a0773e4babcb7b3.jpg" alt="差信号解决方法" loading="lazy">
+        <figcaption>下方挂买单，赌空头失败</figcaption>
+      </figure>
+    </div>
+
+    <!-- 十字星止损 -->
+    <div class="card">
+      <span class="card-tag example">案例</span>
+      <div class="card-title">弱信号+强趋势的处理</div>
+      <p class="card-text">顶部倒T形线实体很小，从信号K线角度是很差的做空信号。且当前处于强上涨趋势中，做空理由很不理想。</p>
+      <p class="card-text">在它下方更多人选择买入而非卖出。这根K线属于跳空K线，很多人会在缺口下边挂单买入。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/e75506cc6b6cd85297e0a3340abfd13dc718a2e1141664ad3388f3ce5290529b.jpg" alt="弱信号处理" loading="lazy">
+        <figcaption>弱信号K线不构成做空理由</figcaption>
+      </figure>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/cd4494ec6931d4ffc4b1be12cac55a4939bca6d320b404dd34d7de296a702e1e.jpg" alt="止损设置" loading="lazy">
+        <figcaption>止损放在前低下方</figcaption>
+      </figure>
+    </div>
+
+    <!-- 三推楔形 -->
+    <div class="card">
+      <span class="card-tag example">三推楔形</span>
+      <div class="card-title">三推楔形反转</div>
+      <p class="card-text">当看到最新一根阴线，情况发生了改变。前面走完了一波三推，且这根K线体积巨大，同时吞噬了前面两根K线，收在几乎最低——是良好的信号K线。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/049dbd418718183932fc362abbc18bb022223b8fba65f9f522a2ef86e2c5d97a.jpg" alt="三推楔形反转" loading="lazy">
+        <figcaption>三推楔形 + 良好信号K线</figcaption>
+      </figure>
+    </div>
+
+    <!-- 压力位+二段陷阱 -->
+    <div class="card">
+      <span class="card-tag example">压力位</span>
+      <div class="card-title">参考前方走势</div>
+      <p class="card-text">参考前面走势：处在二段行情陷阱处 + 前方压力位区间。压力位出现大阴线，多单持仓先清仓。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/9c9325bda3562656484d06b8c0f228871e6a41a504cddbc4b54d8f55e4b89fbf.jpg" alt="压力位分析" loading="lazy">
+        <figcaption>压力位大阴线，多单先清仓</figcaption>
+      </figure>
+    </div>
+
+  </div>
+</section>
+
+<!-- ===== STAGE 4 : 回调&数k线（1） ===== -->
+<section class="stage" id="ch4">
+  <div class="stage-header">
+    <span class="stage-num">第四章</span>
+    <h2 class="stage-title">回调 &amp; 数K线（1）—— 顺势交易</h2>
+  </div>
+  <p class="stage-desc">回调定义与识别、高1/高2/高3、低1/低2/低3、50%回调重要性、机构交易者视角</p>
+
+  <div class="card-grid">
+
+    <!-- 回调定义 -->
+    <div class="card">
+      <span class="card-tag concept">回调定义</span>
+      <div class="card-title">上涨趋势中的回调</div>
+      <p class="card-text"><strong>上涨趋势：</strong>高低点都在不断抬高。当出现一根K线跌破了前一根K线的低点时，就是一次回调。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/033cc25058af6d056a0907aea2d8b71e7ef2a320f46c2867adb9469eb8204042.jpg" alt="上涨趋势回调" loading="lazy">
+        <figcaption>上涨趋势：跌破前低即回调</figcaption>
+      </figure>
+    </div>
+
+    <!-- 下跌趋势反弹 -->
+    <div class="card">
+      <span class="card-tag concept">反弹定义</span>
+      <div class="card-title">下跌趋势中的反弹</div>
+      <p class="card-text"><strong>下跌趋势：</strong>高低点不断降低。当出现一根K线突破了前一根K线的高点时，就是一次反弹。</p>
+    </div>
+
+    <!-- 隐藏回调 -->
+    <div class="card">
+      <span class="card-tag concept">隐藏回调</span>
+      <div class="card-title">隐藏的回调</div>
+      <p class="card-text">上涨趋势中的长影线、小阴线、十字星 = <strong>隐藏的回调</strong>。</p>
+      <p class="card-text">大周期来看没有回调，小周期来看是有一次回调的。多头会在这类K线的收盘处买入，赌这只是一次回调，期待趋势继续延续。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/d9953ec98bc66375a7040f27c4df09896d7265d907a417b840394130c660d82e.jpg" alt="隐藏回调" loading="lazy">
+        <figcaption>长影线/十字星=隐藏的回调</figcaption>
+      </figure>
+    </div>
+
+    <!-- 回调重要性 -->
+    <div class="card key-concept orange">
+      <span class="card-tag concept">核心原则</span>
+      <div class="card-title">回调为何重要？</div>
+      <p class="card-text" style="font-size:15px;font-weight:600;">它给交易者提供了<strong style="color:var(--accent-green);">高胜率</strong>的入场机会。</p>
+      <p class="card-text">一个强劲趋势，当它出现回调/反弹时，此时入场<strong>盈亏比很好，胜率很高</strong>。</p>
+      <p class="card-text" style="font-size:14px;color:var(--accent-blue);font-weight:600;">顺大趋势，逆小回调。</p>
+    </div>
+
+    <!-- 深度反弹 -->
+    <div class="card">
+      <span class="card-tag example">深度反弹</span>
+      <div class="card-title">强趋势的反转80%概率失败</div>
+      <p class="card-text">前期一波强势下跌，尽管出现了强势的反弹（上涨窄通道），也未能超过下跌趋势的起跌点。因此这也仅仅是一次反弹而非反转。</p>
+      <p class="card-text">大跌大涨大跌大涨 = 符合<strong>震荡区间</strong>的特征。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/a9fc54f23f1b7cf991e340bf2bdb6fc08dce7fe7a57c6ed20e605f02be045f25.jpg" alt="深度反弹" loading="lazy">
+        <figcaption>强势反弹未能超过起跌点，仍是反弹而非反转</figcaption>
+      </figure>
+    </div>
+
+    <!-- 机构交易者 -->
+    <div class="card">
+      <span class="card-tag concept">机构视角</span>
+      <div class="card-title">机构交易者的风控方式</div>
+      <p class="card-text">对拥有大资金的机构来说，他们的止损往往放在上涨趋势起涨点的下方。市场越涨越高，机构承担的风险也越来越大。</p>
+      <p class="card-text"><strong>机构的风险管控：</strong></p>
+      <ul class="card-list">
+        <li>价格越涨越高 → 减仓减小风险 → 引发市场横向/向下回调</li>
+        <li>同时观察空头力量，发现没有做空力量 → 继续买入</li>
+        <li>价格创新高 → 止损上移（从起涨点上移至上一个回调波段最低点下方）</li>
+      </ul>
+      <p class="card-text">重复此过程，直到发现空头力量很强劲时→卖出平仓。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/4cfacd88ecf0e311cd8cb9626d085adcff9856fdae9fe8ad09dfb0d1c00ecfe7.jpg" alt="机构风控" loading="lazy">
+        <figcaption>机构交易者将止损放在起涨点下方</figcaption>
+      </figure>
+    </div>
+
+    <!-- 机构风控 -->
+    <div class="card key-concept">
+      <span class="card-tag concept">关键公式</span>
+      <div class="card-title">反转的驱动</div>
+      <p class="card-text" style="font-size:16px;font-weight:600;color:var(--accent-orange);">多头卖出平仓 + 强势空头卖出 = 反转</p>
+    </div>
+
+    <!-- 50%回调 -->
+    <div class="card">
+      <span class="card-tag concept">50%回调</span>
+      <div class="card-title">50%回调的重要性</div>
+      <p class="card-text">强势多头趋势，为什么回调到50%位置停住了？</p>
+      <p class="card-text"><strong>多头：</strong>此时做多期待测试前高。<strong>空头：</strong>此时做空期待回到起点。双方盈亏比都是1:1。</p>
+      <p class="card-text">但是由于前面是强势上涨趋势，概率略微偏向多头（60%）。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/538291f8bf8e60e9b4bfa866ced7b4a35223b98d2f59057cdc6e5ac48a1b4404.jpg" alt="50%回调" loading="lazy">
+        <figcaption>50%回调位置多空博弈</figcaption>
+      </figure>
+    </div>
+
+    <!-- 高1定义 -->
+    <div class="card key-concept">
+      <span class="card-tag concept">数K线</span>
+      <div class="card-title">高1（High 1）—— 第一次回调入场点</div>
+      <p class="card-text">上涨趋势高低点不断抬高。当出现一根低点低于前一根K线低点的K线时，回调开始。</p>
+      <p class="card-text">回调过程中当<strong>第一次出现一根高点高于前一根K线高点的K线</strong>时，这个就是<strong style="color:var(--accent-green);">高1</strong>。</p>
+      <p class="card-text">高1入场理由：上涨趋势高点不断抬高，此处高点再次抬高，多军入场期待后续行情延续。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/0bf4bd5704f75eab894a305cdb84ba831626aaf1f1245336bc530140294ff428.jpg" alt="高1定义" loading="lazy">
+        <figcaption>回调后首次高点抬高 = 高1</figcaption>
+      </figure>
+    </div>
+
+    <!-- 高2/高3 -->
+    <div class="card key-concept">
+      <span class="card-tag concept">数K线</span>
+      <div class="card-title">高2（High 2）—— 第二次回调入场点</div>
+      <p class="card-text">有时行情回调并不是只有一段（两段式回调），高1失败——回调继续，行情继续下跌。</p>
+      <p class="card-text">当<strong>再次出现一根最高点高于前一根K线最高点的K线</strong>时，这个就是<strong style="color:var(--accent-green);">高2</strong>。</p>
+      <p class="card-text">注意：如果高1后下一根还是阳线，但不是高2。高2要等高1失败、回调继续后重新数。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/e6cab2ca50e571d5c248d9b3e87705f2a0bd5740b517aa5582af3a356596640b.jpg" alt="高2定义" loading="lazy">
+        <figcaption>两段式回调：高1失败后出现高2</figcaption>
+      </figure>
+    </div>
+
+    <!-- 高3 = 楔形牛旗 -->
+    <div class="card">
+      <span class="card-tag concept">数K线</span>
+      <div class="card-title">高3（High 3）—— 三段式楔形牛旗</div>
+      <p class="card-text">有时两段式回调后还不够，继续回调出现高3。高3实际上相当于<strong>三段式的楔形牛旗</strong>。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/25d073b0cfe3478db71ddef9a92b13b0c7ec140fa18017d21a163dc59eaafc12.jpg" alt="高3定义" loading="lazy">
+        <figcaption>高3 = 三段式楔形牛旗</figcaption>
+      </figure>
+    </div>
+
+    <!-- 强势趋势下的高1 -->
+    <div class="card">
+      <span class="card-tag example">案例</span>
+      <div class="card-title">强势趋势中的数K线应用</div>
+      <p class="card-text">连续四根大阳线收在很高，强势突破。随后进入窄通道，长期运行在EMA20上方。</p>
+      <p class="card-text">大资金机构将止损放在上涨起点下方，后续不断买入，可以在回调开始后的每一根K线上方挂突破单——高1、高2、高3操作。</p>
+      <p class="card-text">个人投资者无法接受这么大的止损，最好在<strong>好的信号K线</strong>上方做多。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/caf003dccfd5e849512aa73b378313bede27c659cdb816ac1e11104242203f97.jpg" alt="强势趋势数K线" loading="lazy">
+        <figcaption>强势趋势中的高1/高2/高3</figcaption>
+      </figure>
+    </div>
+
+    <!-- 何时使用高1/高2/高3 -->
+    <div class="card">
+      <span class="card-tag concept">选择策略</span>
+      <div class="card-title">高1、高2、高3何时使用</div>
+      <p class="card-text"><strong>超级强势趋势 → 选择高1入场。</strong></p>
+      <p class="card-text">左边强势上涨趋势，中间只有一根小十字星。市场上的交易员迫不及待想在回调时买入。属于<strong>Always In Long</strong>行情——只做多不做空。</p>
+      <p class="card-text"><strong>一般情况下</strong>不会使用高1入场，因为回调总是有二段/三段式回调。只有在<strong>超级强的趋势</strong>下才会选择高1买入。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/01876948c84f0cf2aeb2bdae708945b924a1d910006e3076e6dc62f84bb73ec7.jpg" alt="何时使用高1" loading="lazy">
+        <figcaption>超级强势趋势用高1，一般情况等高2</figcaption>
+      </figure>
+    </div>
+
+    <!-- 低1定义 -->
+    <div class="card key-concept">
+      <span class="card-tag concept">数K线</span>
+      <div class="card-title">低1（Low 1）—— 第一次反弹入场点</div>
+      <p class="card-text">下降趋势中高低点都在不断降低。当出现一根高点高于前一根K线高点的K线时，反弹开始。</p>
+      <p class="card-text">反弹开始后，<strong>第一次有一根K线的最低点突破前一根K线最低点时</strong>，这个就是<strong style="color:var(--accent-red);">低1</strong>。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/10ecb9971f6e7a3cca3d40c04267c90387dbe319736173fd3d93b10cd4c05564.jpg" alt="低1定义" loading="lazy">
+        <figcaption>下降趋势反弹后首次新低 = 低1</figcaption>
+      </figure>
+    </div>
+
+    <!-- 低2/低3 -->
+    <div class="card">
+      <span class="card-tag concept">数K线</span>
+      <div class="card-title">低2 / 低3</div>
+      <p class="card-text"><strong>低2：</strong>低1出现后未能延续空头趋势，继续反弹。第二次出现低点突破前低时，就是低2。</p>
+      <p class="card-text"><strong>低3：</strong>同理，低3可以看作是楔形熊旗的反转结构。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/6d7883d16646149a3a722cb377f7ab128f3e1ab1d1df580e084b9bed6737ac64.jpg" alt="低2低3" loading="lazy">
+        <figcaption>低2、低3同理，低3=楔形熊旗</figcaption>
+      </figure>
+    </div>
+
+    <!-- 双顶+低1 -->
+    <div class="card">
+      <span class="card-tag example">双顶等距</span>
+      <div class="card-title">双顶 + 低1入场</div>
+      <p class="card-text">双顶结构。巨大阴线收在底部，大概率会有二段下跌。反弹后出现低1入场点。</p>
+      <p class="card-text">目标位：期待双顶的等距行情。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/2797a499c83c820573bfa5da7a2b25849919ed1b10109de39d9c0124125a110a.jpg" alt="双顶低1" loading="lazy">
+        <figcaption>双顶结构 + 低1入场</figcaption>
+      </figure>
+    </div>
+
+    <!-- 创新低后重新记数 -->
+    <div class="card">
+      <span class="card-tag concept">重要规则</span>
+      <div class="card-title">创新低后重新记数</div>
+      <p class="card-text">下降趋势创新低后重新开始数K线。</p>
+      <p class="card-text">低1处不要轻易介入，即使入场也要轻仓大止损。低2处如果是好的做空信号，则可以做空。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/2ce562f3e75cfe2820c8f07d13488f766d65fa705016fdbb2ca0edda11ceb5c5.jpg" alt="创新低重新记数" loading="lazy">
+        <figcaption>创新低后重新数K线</figcaption>
+      </figure>
+    </div>
+
+    <!-- 多个低1 -->
+    <div class="card">
+      <span class="card-tag example">案例</span>
+      <div class="card-title">连续多个低1 = 强下降趋势</div>
+      <p class="card-text">连续五个低1——说明多头反弹只有一下，多头无力 = <strong>强下降趋势</strong>。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/a625beb689eff18d9ec41fa4a6589ac3744a9884992aa95076f0e31aded8e71e.jpg" alt="多个低1" loading="lazy">
+        <figcaption>连续多个低1 = 多头无力</figcaption>
+      </figure>
+    </div>
+
+    <!-- 回调与反转定义 -->
+    <div class="card key-concept">
+      <span class="card-tag concept">关键区分</span>
+      <div class="card-title">回调 vs 反转</div>
+      <p class="card-text">前面是强上涨趋势，这段下跌认为是<strong style="color:var(--accent-orange);">回调</strong>而不是反转。尤其在EMA20附近得到了支撑又收了上来。</p>
+      <p class="card-text">出现了很不错的高1 → 开仓后立刻出现向下吞噬线（多头陷阱），赶紧离场。</p>
+      <p class="card-text">后面连续几根阴线收在EMA20下方 → 可能不是回调了，而是行情发生了<strong style="color:var(--accent-red);">反转</strong>。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/7be4b133235055c941950fd7125f6f70133771bf4b8a3dddceb3c88e1e7d5c58.jpg" alt="回调vs反转" loading="lazy">
+        <figcaption>回调 vs 反转的关键区别</figcaption>
+      </figure>
+    </div>
+
+    <!-- 三推楔形失败 -->
+    <div class="card">
+      <span class="card-tag warning">反向等距</span>
+      <div class="card-title">三推楔形失败 → 反向等距</div>
+      <p class="card-text">低1、低2、低3全都失败了。这种情况下可能会反向去到等距目标位。</p>
+      <p class="card-text" style="font-weight:600;color:var(--accent-purple);">失败的楔形会往反方向走很远。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/f614d5e10b27e04b4366777f7da98a53d2cb21256d5f7180ee41be83edcc7c36.jpg" alt="三推楔形失败" loading="lazy">
+        <figcaption>低1低2低3全部失败→反向等距</figcaption>
+      </figure>
+    </div>
+
+  </div>
+</section>
+
+<!-- ===== STAGE 5 : 回调&数k线（2） ===== -->
+<section class="stage" id="ch5">
+  <div class="stage-header">
+    <span class="stage-num">第五章</span>
+    <h2 class="stage-title">回调 &amp; 数K线（2）—— 逆势交易</h2>
+  </div>
+  <p class="stage-desc">逆势交易者何时离场、震荡区间内信号K线失效、开盘第一个趋势的反转概率</p>
+
+  <div class="card-grid">
+
+    <!-- 逆势交易离场 -->
+    <div class="card">
+      <span class="card-tag concept">逆势交易</span>
+      <div class="card-title">逆势交易者何时离场</div>
+      <p class="card-text">结合数K线分析逆势交易者何时离场。</p>
+      <p class="card-text">强势上涨后发生回调，30号K线是回调后第一次高点超过前一根K线高点的K线（高1）。但29号K线并不是一个好的做多K线——实体很大的阴线收在下方。</p>
+      <p class="card-text">高1、高2和低1、低2并不在乎前一根K线是否完美，是非常纯粹的按照趋势定义的。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/91f4ebe804fd0cb4f561c08fc2dfde72b4cd327debfcb81c1384fcf1cb84ca76.jpg" alt="逆势交易离场" loading="lazy">
+        <figcaption>逆势交易者关注高1/高2、低1/低2</figcaption>
+      </figure>
+    </div>
+
+    <!-- 空头离场 -->
+    <div class="card">
+      <span class="card-tag example">空头离场</span>
+      <div class="card-title">逆势空头该如何离场</div>
+      <p class="card-text">空头刚开单入场后，市场立刻向上反弹——市场第二次尝试延续上涨趋势。当市场第二次反对时，这是来自市场的<strong>警告</strong>。应当先离场观望。</p>
+      <p class="card-text"><strong>空头离场方式：</strong></p>
+      <ul class="card-list">
+        <li>如果有第二次向上抬高则离场</li>
+        <li>将止损放在整个双顶结构的上方</li>
+      </ul>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/2d0fa18b179700610340cdd5909bacf8f3449610426401d32af50021297b73ad.jpg" alt="空头离场" loading="lazy">
+        <figcaption>市场第二次反对 = 警告，先离场</figcaption>
+      </figure>
+    </div>
+
+    <!-- 空头放弃K线 -->
+    <div class="card">
+      <span class="card-tag concept">空头放弃K线</span>
+      <div class="card-title">空头放弃K线</div>
+      <p class="card-text">空头希望跌破颈线后达到等距行情。但市场未能按照预期，反而达到反向的等距行情。</p>
+      <p class="card-text">多头也知道空头可能在此买入止损，因此他们可能也会在此挂单买入。多空双方都在买，同时推动市场向上——形成<strong>空头放弃K线</strong>。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/9cc2edc7773ebb9e8b3eb0c016b1ab680f7488980f250ede605381bc38e7693c.jpg" alt="空头放弃K线" loading="lazy">
+        <figcaption>空头放弃K线  = 多空双方都在买入</figcaption>
+      </figure>
+    </div>
+
+    <!-- 震荡区间信号K线失效 -->
+    <div class="card key-concept red">
+      <span class="card-tag concept">重要原则</span>
+      <div class="card-title">震荡区间内信号K线失去意义</div>
+      <p class="card-text">震荡区间内没有趋势，一定要说趋势的话那就是惯性。震荡区间内的顺势交易其实是押注所有的突破都会失败。</p>
+      <p class="card-text">在区间内做突破的人，反而成了逆势交易者。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/360fcd84a0a0496943ddddd29812d1e0010dbbd28c1468475090a35c2bc96e93.jpg" alt="震荡区间信号K线失效" loading="lazy">
+        <figcaption>震荡区间内突破交易者是逆势交易</figcaption>
+      </figure>
+    </div>
+
+    <!-- 开盘第一个趋势 -->
+    <div class="card">
+      <span class="card-tag concept">开盘规律</span>
+      <div class="card-title">开盘第一个趋势</div>
+      <p class="card-text" style="font-size:15px;font-weight:600;">开盘的第一个趋势不管有多强——<span style="color:var(--accent-orange);">80%概率会有小反转</span>，<span style="color:var(--accent-red);">50%概率会有大反转</span>。</p>
+      <p class="card-text">因为开盘的第一个趋势往往是去测试前期的支撑或阻力的位置。然后在支撑阻力位处，市场共同决定它是突破还是反转。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/7bbc44f354347cb7b1b507df125d8866f0023fc7ce4d0905312451c6a444cf86.jpg" alt="开盘第一个趋势" loading="lazy">
+        <figcaption>开盘趋势80%会有小反转</figcaption>
+      </figure>
+    </div>
+
+    <!-- 抢购高潮 -->
+    <div class="card">
+      <span class="card-tag example">抢购高潮</span>
+      <div class="card-title">抢购高潮（Climax）</div>
+      <p class="card-text">如果开盘第一个趋势幅度非常大非常强，那么哪怕它被完全反转了也很难超过起跌点太多。</p>
+      <p class="card-text">当趋势持续一段时间后，出现巨大的K线，小心<strong>抢购高潮</strong>。哪怕判断后续行情继续上破也要等看到好的跟随后再进。</p>
+      <p class="card-text">抢购高潮的收盘价到前期K线的高点处出现缺口——这种缺口非常有可能被回补。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/a076c305f3beb13a61a3607e285ca7c3d40210b880aa540a67014ec82e60f97b.jpg" alt="抢购高潮" loading="lazy">
+        <figcaption>趋势末期巨大K线 = 抢购高潮</figcaption>
+      </figure>
+    </div>
+
+    <!-- 完美信号K线 -->
+    <div class="card">
+      <span class="card-tag example">案例</span>
+      <div class="card-title">完美信号K线做空</div>
+      <p class="card-text">40号K线实体太小下影线过长，不太理想。41号K线很完美——在其下方做空很合理。止损在最高点上方。</p>
+      <p class="card-text">一倍盈亏比处市场出现反弹，二倍盈亏比处也出现了反弹。反弹是空头止盈引起的。</p>
+      <p class="card-text" style="font-weight:600;color:var(--accent-blue);">市场没有巧合。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/123f90855910e0d90d37f25a586d026f2d0c0609107222a369cf441dd420bcd0.jpg" alt="完美信号K线" loading="lazy">
+        <figcaption>完美信号K线 + 合理止损 = 有效交易</figcaption>
+      </figure>
+    </div>
+
+</div>
+</section>
+
+</div>
+
+<!-- ========== STAGE 6: 缺口（3） ========== -->
+<div class="container">
+<section class="stage" id="ch6">
+  <div class="stage-header">
+    <span class="stage-num">第六章</span>
+    <h2 class="stage-title">缺口（3）</h2>
+  </div>
+  <p class="stage-desc">缺口类型与盈亏比综合应用，结合胜率与盈亏比实现稳定盈利。</p>
+  <div class="card-grid cols-2">
+
+    <div class="card key-concept concept fullwidth">
+      <span class="card-tag concept">核心概念</span>
+      <div class="card-title">缺口与盈亏比</div>
+      <p class="card-text">40%胜率 + 至少两倍盈亏比 + 其他时候小亏小赚或打平 = 稳定盈利。</p>
+      <p class="card-text">假设 5 万美金本金，每次冒 500 美金风险（账户 1%），每周 10 笔交易。目标：争取两倍盈利，赚 1000 美金。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/9183d5604f4f5104532da034b89b1e1467a5808e1aec9eec07ad164caa4032fc.jpg" alt="缺口和盈亏比" loading="lazy">
+        <figcaption>缺口与盈亏比分析</figcaption>
+      </figure>
+    </div>
+
+    <div class="card">
+      <span class="card-tag example">案例</span>
+      <div class="card-title">开盘反转交易</div>
+      <p class="card-text">开盘的第一个趋势不管看上去有多强，80%概率有小反转，50%概率有大反转。图中7号k线是一根反转k线，后续可惜多头突破均线失败。在14号k线下方挂单成功离场，本单小赚约200美金。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/cb57569f36e01ef32e0c4660eaabd5bce2595f7572ed1cb9d2d759507c9fab3d.jpg" alt="开盘反转交易" loading="lazy">
+        <figcaption>开盘反转交易案例</figcaption>
+      </figure>
+    </div>
+
+    <div class="card fullwidth">
+      <span class="card-tag example">案例</span>
+      <div class="card-title">强趋势后的突破失败</div>
+      <p class="card-text">连续九根阳线的强上涨趋势，大部分收在一半以上甚至最高。强趋势后面有一段回调但未成功跌破均线。后续63号k线是大阳线收在高位且是高1，在此买入后突破失败，本单亏损500美金。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/3473ab86c22ef7e36f8fb396c0582d6477dafcf8d023b0888d1d98f1ce32af08.jpg" alt="强趋势突破失败" loading="lazy">
+        <figcaption>强趋势后的突破失败案例</figcaption>
+      </figure>
+    </div>
+
+    <div class="card">
+      <span class="card-tag example">案例</span>
+      <div class="card-title">大楔形套小楔形</div>
+      <p class="card-text">大楔形套小楔形，74号k线本身是一根完美的信号k线，成功拿到两倍目标位。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/4304b6fefe25e08213c83d09bae0dca2c789943736a8dcfa5da6b9e12b1143e7.jpg" alt="嵌套楔形" loading="lazy">
+        <figcaption>大楔形套小楔形</figcaption>
+      </figure>
+    </div>
+
+    <div class="card key-concept summary fullwidth">
+      <span class="card-tag summary">总结</span>
+      <div class="card-title">盈亏比统计</div>
+      <p class="card-text">假设一周十笔交易有六笔小赚小亏或打平，四笔达到两倍目标位，赚1000美金，一周总盈利约4000美金（账户本金8%）。即便只有两笔达到两倍目标位，总盈利也有约2000美金（约4%）。控制亏损是前提，止损的重要性。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/6b330b396b5dfc77f5fd76dbacf30a63e773ef96ac1db3ad0544d2a9d7c868c2.jpg" alt="止损的重要性" loading="lazy">
+        <figcaption>止损重要性</figcaption>
+      </figure>
+    </div>
+
+    <div class="card fullwidth">
+      <span class="card-tag case">案例分析</span>
+      <div class="card-title">开盘宽通道分析</div>
+      <p class="card-text">开盘后多根k线呈现十字星震荡，五分钟是连续小阳线，放到一分钟来看是宽通道。宽通道75%概率会被反向突破去测试通道起点。在8号k线位置做空，赌今天是一个大的下降趋势。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/395f1b6f41340962f4728cbb90f9bfad4314710ab1d46fd27cea03e7e05012a8.jpg" alt="宽通道分析" loading="lazy">
+        <figcaption>五分钟宽通道分析</figcaption>
+      </figure>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/8c124b876acfeecce4744976fc0fd8a9c1d379400c797fbb4aa1b08eda3c4618.jpg" alt="做空信号" loading="lazy">
+        <figcaption>8号k线做空信号</figcaption>
+      </figure>
+    </div>
+
+  </div>
+</section>
+
+<!-- ========== STAGE 7: 市场周期 ========== -->
+<section class="stage" id="ch7">
+  <div class="stage-header">
+    <span class="stage-num">第七章</span>
+    <h2 class="stage-title">市场周期</h2>
+  </div>
+  <p class="stage-desc">市场周期四个阶段：突破 → 窄通道 → 宽通道 → 震荡区间。理解市场所处的周期阶段，制定对应交易策略。</p>
+  <div class="card-grid cols-2">
+
+    <div class="card key-concept concept">
+      <span class="card-tag concept">核心概念</span>
+      <div class="card-title">Market Cycle 市场周期</div>
+      <p class="card-text">市场周期四个阶段：突破（强趋势）→ 窄通道（强趋势）→ 宽通道（弱趋势）→ 震荡区间。</p>
+    </div>
+
+    <div class="card">
+      <span class="card-tag concept">突破阶段</span>
+      <div class="card-title">多头突破 Bull Breakout</div>
+      <p class="card-text">连续大阳线，几乎没有回调或回调只有一根k线。Always In Long (AIL) —— 只能做多不能做空。尽量做波段交易，也可以剥头皮。</p>
+      <p class="card-text">止损最合理的设置永远是放在突破的起涨点（最低点）下方。随着趋势越来越强，追进去的胜率就越来越高，但盈亏比会越来越差。只有起涨点被跌破了才能说上涨趋势结束了。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/d68b1715fcdd187a40c20b2d1415000b8f1e14601e8588122ab15acfb2f0900c.jpg" alt="多头突破" loading="lazy">
+        <figcaption>多头突破</figcaption>
+      </figure>
+    </div>
+
+    <div class="card">
+      <span class="card-tag concept">窄通道</span>
+      <div class="card-title">上升窄通道 Tight Bull Channel</div>
+      <p class="card-text">紧贴趋势线运行，回调幅度小且不超过3根k线。Always In Long，只能做多不能做空。比突破周期稍弱一点的是窄通道。虽然不像突破那样有连续性，但回调幅度也不会很大。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/303941a8d92a14cdaaa329643ab3d734fd2d782fbf616c906b3d5fc8cee97db9.jpg" alt="上升窄通道" loading="lazy">
+        <figcaption>上升窄通道</figcaption>
+      </figure>
+    </div>
+
+    <div class="card">
+      <span class="card-tag concept">宽通道</span>
+      <div class="card-title">宽通道与多周期嵌套</div>
+      <p class="card-text">宽通道趋势较弱，多空都有机会。有时回调幅度很深，但总体关键高低点都在抬高。</p>
+      <p class="card-text">多周期视角：周线强趋势突破 → 日线窄通道 → 一小时/五分钟宽通道。大周期突破 = 小周期窄通道 = 更小周期宽通道。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/6b03ee7d1223efd952541bb836052a55125305e16e3f107195752cd86d7c20ad.jpg" alt="宽通道" loading="lazy">
+        <figcaption>宽通道</figcaption>
+      </figure>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/f5e8150afa8921c117768dd7b297d3a7a93f163596b3e28949bd381f604e35bc.jpg" alt="多周期" loading="lazy">
+        <figcaption>多周期嵌套</figcaption>
+      </figure>
+    </div>
+
+    <div class="card">
+      <span class="card-tag concept">空头突破</span>
+      <div class="card-title">下降趋势的突破</div>
+      <p class="card-text">空头突破：连续大阴线，几乎没有反弹或反弹只有一根k线。Always In Short (AIS)，只能做空不能做多。止损最合理的设置永远放在突破的起跌点（最高点）上方。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/2b1dafa40817abb1e2bbb970d2bc9b7eb2609ec867aa44c4d97c0a743415cdd4.jpg" alt="空头突破" loading="lazy">
+        <figcaption>空头突破</figcaption>
+      </figure>
+    </div>
+
+    <div class="card fullwidth">
+      <span class="card-tag case">周期转换</span>
+      <div class="card-title">强弱转换实例</div>
+      <p class="card-text">前期非常强的突破几乎没回调。底部涨上来后首次出现了稍微有幅度的回调。但相较于前期这么强的上涨趋势，第一次尝试反转大概率失败，只是一次回调。回调也是通道的开始，趋势由强变弱。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/5da58c6ce0a334d4c8dca0285d17684f98ac80ac87e846e13fd23e4eaa4a6bae.jpg" alt="趋势由强变弱" loading="lazy">
+        <figcaption>强突破转为通道</figcaption>
+      </figure>
+      <p class="card-text">强劲的下降趋势总体走了一个窄通道。底部首次出现了有力度的反弹，但就前期强劲的下降趋势而言首次反转大概率失败。后面进入了通道，总体还是在向下运行。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/96cf932928e4d021929b53783671878fd5b65a1cd574835c69436819214fcd4f.jpg" alt="空头转通道" loading="lazy">
+        <figcaption>强空头转为通道</figcaption>
+      </figure>
+    </div>
+
+    <div class="card key-concept concept fullwidth">
+      <span class="card-tag concept">市场惯性</span>
+      <div class="card-title">市场惯性 & Binary Decision</div>
+      <p class="card-text">市场具有惯性，会重复之前的行为。80%打破惯性的尝试都会失败。顺势交易：高抛低吸，直到被真突破。但是总有一天箱体会被突破，形成新的趋势，等待真突破的信号，赚大波段。</p>
+      <p class="card-text">持续越久，被突破概率越大。高抛低吸时止损可以大一点防止假突破。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/aa8886deb4cd180c6596400ced4dba4dcd284790927610bd6723588dab20c166.jpg" alt="市场惯性" loading="lazy">
+        <figcaption>市场惯性</figcaption>
+      </figure>
+    </div>
+
+    <div class="card fullwidth">
+      <span class="card-tag summary">二元决策</span>
+      <div class="card-title">Binary Decision 二元决策</div>
+      <p class="card-text">现在是趋势还是震荡？趋势：突破还是通道？窄通道还是宽通道？小反转还是大反转？震荡区间：幅度宽窄？持续多久了？市场处于哪个周期？刚刚开始还是持续很久了？</p>
+      <p class="card-text">突破 → 顺势做单边；窄通道 → 顺势做单边；宽通道 → 最好顺势也可逆势剥头皮；窄幅震荡 → 等突破；宽幅震荡 → 高抛低吸。</p>
+    </div>
+
+    <div class="card fullwidth">
+      <span class="card-tag case">周期演变案例</span>
+      <div class="card-title">通过多空盈亏判断周期演变</div>
+      <p class="card-text">先观察限价单多头是否赚钱，然后观察突破单多头是否赚钱。如果突破单多头无法赚钱，行情上去后立刻下来，那么下降趋势还是良好的。如果突破单多头也能赚钱，那么行情可能变为震荡区间甚至反转。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/549cb546499cadc76461df2b455cfdc1fc440b8f1163321fc34a6d8b93048f00.jpg" alt="多空盈亏" loading="lazy">
+        <figcaption>通过多空盈亏判断趋势强弱</figcaption>
+      </figure>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/146d932808a6e3ba1b842fcca8a3b7079e727b9937601f3b63729f815ae68fe3.jpg" alt="震荡区间" loading="lazy">
+        <figcaption>强趋势变震荡区间</figcaption>
+      </figure>
+    </div>
+
+  </div>
+</section>
+
+<!-- ========== STAGE 8: 突破（1-2） ========== -->
+<section class="stage" id="ch8">
+  <div class="stage-header">
+    <span class="stage-num">第八章</span>
+    <h2 class="stage-title">突破（1）—（2）</h2>
+  </div>
+  <p class="stage-desc">假突破与真突破的识别，突破后的确认与跟随，二段行情与二段陷阱。</p>
+  <div class="card-grid cols-2">
+
+    <div class="card key-concept concept fullwidth">
+      <span class="card-tag concept">核心概念</span>
+      <div class="card-title">假突破</div>
+      <p class="card-text">大阴线收在最低向下尝试突破最终失败，追空进去止损。大阳线收在最高向上尝试突破最终失败，追多进去止损。市场具有惯性，80%尝试突破的行为都会失败。突破，是想要改变市场惯性的行为。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/ceece9d0555c823c9a24f313a1a7e7ece897199f8d74505f81027944a5a2dee1.jpg" alt="假突破" loading="lazy">
+        <figcaption>假突破</figcaption>
+      </figure>
+    </div>
+
+    <div class="card">
+      <span class="card-tag case">案例分析</span>
+      <div class="card-title">下跌力量不强</div>
+      <p class="card-text">在这波下跌趋势中，有多根阳线收在较高位置，很多阴线也有较长的下影线。空头未能有连续多根阴线收在最低。这段下跌力量不强，延续性不强。很可能只是震荡区间的一段，或者可能被完全反转。从更小周期来看是一个宽通道。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/c435cd0b67593ba9208aace19631a4b206b272f9e42e48c7ff924e719c64951c.jpg" alt="下跌力量不强" loading="lazy">
+        <figcaption>下跌力量不强</figcaption>
+      </figure>
+    </div>
+
+    <div class="card">
+      <span class="card-tag case">震荡交易法</span>
+      <div class="card-title">如何交易假突破</div>
+      <p class="card-text">不建议操作，因为止损过大需加仓。更建议做三推楔形类的反转。前期大震荡区间，在区间上边卖空的话，一根大阳线突破后多头有连续的阳线跟随，空头只好被迫止损。</p>
+      <p class="card-text">好的上涨趋势：多空双方都在买。好的下降趋势：多空双方都在卖。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/1d2ca8235816c83b56365b6f49888c35e7581e96682853a8716bb80cc881dd46.jpg" alt="震荡交易法" loading="lazy">
+        <figcaption>震荡交易法的风险</figcaption>
+      </figure>
+    </div>
+
+    <div class="card fullwidth">
+      <span class="card-tag summary">反转类型</span>
+      <div class="card-title">什么样的反转突破更容易成功</div>
+      <p class="card-text">左边强上涨趋势，高点处三推后出现连续大阴线收在低位向下突破。空头制造了很多价格缺口，中途反弹也不足以让多头解套。前期的阴线很大且收在低位，判断后续还有一段下跌。突破也可以从小k线开始，连续的小k线会慢慢变成一个强势突破，中等体积的连续k线最好。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/ad51f2fc395ed4ffe019651570476e352944760c4833ba5cc047228e316fdbb3.jpg" alt="强势反转突破" loading="lazy">
+        <figcaption>强势反转突破案例</figcaption>
+      </figure>
+    </div>
+
+    <div class="card key-concept concept">
+      <span class="card-tag concept">真突破</span>
+      <div class="card-title">真突破——需要确认和后续跟随</div>
+      <p class="card-text">一根体积很大的大阴线收盘在前低下方，重点看后续是否有有效跟随。如果紧跟一根阴线收在最低位，是非常好的跟随。此时市场会有很多人愿意在其下方挂单做空。每一根k线只要都是空头趋势k线，都会有机构介入做空。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/c9284b3843e2635b3a7e767fa8a23c638af83eb983521088535f99bb8b6d34a5.jpg" alt="真突破" loading="lazy">
+        <figcaption>真突破需要确认和跟随</figcaption>
+      </figure>
+    </div>
+
+    <div class="card fullwidth">
+      <span class="card-tag case">跟随案例分析</span>
+      <div class="card-title">突破后的跟随分析</div>
+      <p class="card-text">大阳线突破后跟随差，反转下来。后续果然变震荡区间。大跌大涨走势是明显震荡区间特征。在震荡区间内经常出现二段陷阱——回调后的第二段走势非常吓人，好像要突破一样，最终失败，具有迷惑性。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/0108a5f28c475c899e9947d91c7755f1d0490ed6eb3418bf8841dd11d0ee91c1.jpg" alt="跟随差" loading="lazy">
+        <figcaption>突破后跟随差</figcaption>
+      </figure>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/06a4a3c3daa3d269ca0e9e8903373b555f3c2e43c938fb910bff06be584ad6a9.jpg" alt="二段陷阱" loading="lazy">
+        <figcaption>二段陷阱</figcaption>
+      </figure>
+    </div>
+
+    <div class="card fullwidth">
+      <span class="card-tag example">案例</span>
+      <div class="card-title">后续跟随判断</div>
+      <p class="card-text">大阴线尝试突破前低但收盘未能收在前低下方。随后的跟随不好，但仅凭一根小阳线想要反转空头趋势很难。再出现一根阴线收在最低时出现低1，是第一做空点，或等待低2入场胜率更高。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/36304add5a18dc86b98500893ed1cb828135c54233d4188196c2e4a509dc088b.jpg" alt="跟随判断" loading="lazy">
+        <figcaption>根据跟随力度判断真伪突破</figcaption>
+      </figure>
+    </div>
+
+    <div class="card">
+      <span class="card-tag summary">成功突破的特征</span>
+      <div class="card-title">成功率高的突破特征</div>
+      <p class="card-text"><strong>空头突破：</strong>突破k线体积大、收在最低几乎无影线、离被突破区间足够远、被突破的k线数量越多越好、突破时有急迫感。</p>
+      <p class="card-text"><strong>多头突破：</strong>同理，突破k线体积大、收在最高几乎无影线、离区间足够远、被突破的k线数量多、有急迫感。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/c62f50179d6b61f58991f761cbd018ed63c25fa8073ca79dfdc0f90fb23ad7ac.jpg" alt="成功空头突破" loading="lazy">
+        <figcaption>成功空头突破特征</figcaption>
+      </figure>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/8b15ccc8a603a2dfcd518a6203b38a3632d2fccdf93a2fa8d95060e32bb236bf.jpg" alt="成功多头突破" loading="lazy">
+        <figcaption>成功多头突破特征</figcaption>
+      </figure>
+    </div>
+
+  </div>
+</section>
+
+<!-- ========== STAGE 9: 突破（3-5） ========== -->
+<section class="stage" id="ch9">
+  <div class="stage-header">
+    <span class="stage-num">第九章</span>
+    <h2 class="stage-title">突破（3）—（5）</h2>
+  </div>
+  <p class="stage-desc">二段行情、突破回测、惊喜k线——周期转变的关键信号。</p>
+  <div class="card-grid cols-2">
+
+    <div class="card fullwidth">
+      <span class="card-tag concept">二段行情</span>
+      <div class="card-title">突破后的二段行情</div>
+      <p class="card-text">当小概率事件发生后，后面很可能会有一波第二段行情，甚至可能开启一波大行情。第一段非常强势的向下突破后，有一段小反弹后有第二段下跌。重点观察第二段的向下突破——突破创新低的k线体积大、收盘低、下影短、距离远、有跟随，成功概率高。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/ee36476db0a7612a42d02cf5a4c51214690868552768eac2e1c554212817c638.jpg" alt="二段行情" loading="lazy">
+        <figcaption>突破后的二段行情</figcaption>
+      </figure>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/8ad8a571c3ff6f6394ed66f5baa5dcb95e665d190f7bcd8a6fb6216b56b1e265.jpg" alt="多周期二段" loading="lazy">
+        <figcaption>不同周期二段行情结合</figcaption>
+      </figure>
+    </div>
+
+    <div class="card fullwidth">
+      <span class="card-tag case">周期共振</span>
+      <div class="card-title">多周期共振</div>
+      <p class="card-text">不同时间周期可相互结合。日内小周期：48号k线是3和12的倍数，既是5分钟k线收盘，也是15分钟和1小时收盘。三个周期同时是买入信号，后续上涨势头强劲。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/ff692c616e7650b5635ac70b0476f8130a51dbfc6c46db31fdcc87527b606009.jpg" alt="周期共振" loading="lazy">
+        <figcaption>多周期共振分析</figcaption>
+      </figure>
+    </div>
+
+    <div class="card fullwidth">
+      <span class="card-tag warning">二段陷阱</span>
+      <div class="card-title">震荡行情中的第二段陷阱</div>
+      <p class="card-text">左边行情大涨大跌，震荡区间特征。后续下跌看上去非常强势，好像要加速突破，但很可能是第二段陷阱。突破未成功，直接大阳线回到低点上方。在震荡区间内的第二段不要开仓或加仓，已持仓的要平掉部分保护利润。等待好的信号做反转。二段陷阱的反转会非常剧烈。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/f5c39e31812bc36af132c28b5df30922d3165651ccc0b36bc6d726ecb22bbaed.jpg" alt="二段陷阱" loading="lazy">
+        <figcaption>震荡行情中的第二段陷阱</figcaption>
+      </figure>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/532aafe33182075441fa0bccf7fb97f45eafa7246fc319a1b60b813f2e2d01a6.jpg" alt="二段陷阱案例" loading="lazy">
+        <figcaption>二段陷阱案例</figcaption>
+      </figure>
+    </div>
+
+    <div class="card key-concept concept fullwidth">
+      <span class="card-tag concept">突破回测</span>
+      <div class="card-title">突破（4）——突破回测</div>
+      <p class="card-text">突破后回踩确认，支阻互换。前期几乎都在区间内运行，多次尝试突破失败。终于突破后先有小回调，重新测试压力位后再继续上涨。突破后回调过深代表突破过弱。宽通道下不要高位追高，等待回调买入。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/fcad79e4499559934e23bd3bd35378aa59435f1a9ff373cf748bd37beb7799d4.jpg" alt="突破回测" loading="lazy">
+        <figcaption>突破后回踩确认</figcaption>
+      </figure>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/3c18f47ffe155cde100450383be08fec8e4d0ad96d9f2d1aae7795b9b9bcbd87.jpg" alt="压力位突破" loading="lazy">
+        <figcaption>持续数月的压力位被突破</figcaption>
+      </figure>
+    </div>
+
+    <div class="card">
+      <span class="card-tag case">案例</span>
+      <div class="card-title">势——强势上涨</div>
+      <p class="card-text">顶部出现窄通道。窄通道第一次尝试反转就成功的概率极低。巨大阴线吞没前面两根阳线，看上去很强势但后续失败。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/45b83ffd56ad0c6cf09a65f6077b5a3067b31d8655f1ad2039c5ef987a9463e5.jpg" alt="强势上涨" loading="lazy">
+        <figcaption>强势上涨中的反转失败</figcaption>
+      </figure>
+    </div>
+
+    <div class="card fullwidth">
+      <span class="card-tag concept">惊喜k线</span>
+      <div class="card-title">突破（5）——惊喜k线</div>
+      <p class="card-text"><strong>惊喜k线：</strong>非常突然、意外且体积巨大的k线。往往有二段行情。是市场周期发生改变的信号。体积巨大且有好的跟随，可能发展为新趋势。如果相对前期趋势没有那么强劲，可能只是一次小反转，但它依然改变了市场周期——从强趋势变成弱趋势，或变成震荡区间。</p>
+      <p class="card-text">交易策略随市场变化。在交易区间内策略为高抛低吸，但当两根大阳线出现后，强势突破有60%概率走到等距目标位。此时应不断买入做多，买回调、买突破——只要是买入都是正确的。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/0cf7e5c9d5e7ad70581e7d0e271727c3fecdd5dd8837b25e25239627ac152753.jpg" alt="惊喜k线" loading="lazy">
+        <figcaption>惊喜k线——周期变化信号</figcaption>
+      </figure>
+    </div>
+
+    <div class="card">
+      <span class="card-tag example">案例</span>
+      <div class="card-title">惊喜k线案例</div>
+      <p class="card-text">前期四五十根k线体积都很小，在窄幅震荡中。出现惊喜大阴线且后面有好的跟随，市场就不再是小波动的窄幅震荡，而变成了下降趋势，有60%概率走到等距目标位。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/a81e97e5e8edb0de480fe55807d100928dcf1dc521250111fd79623c25ac2349.jpg" alt="惊喜k线案例" loading="lazy">
+        <figcaption>窄幅震荡后的惊喜k线</figcaption>
+      </figure>
+      <p class="card-text">连续四根惊喜k线——如果有仓位及时离场，没有仓位的找机会做空。至少有一个小第二段，甚至有60%概率走出等距行情。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/131eada873aa14bcdbe98ebbaa65daa7cdadf6a049a3d2a4b1cdf167708a97ff.jpg" alt="连续惊喜k线" loading="lazy">
+        <figcaption>连续四根惊喜k线</figcaption>
+      </figure>
+    </div>
+
+    <div class="card fullwidth">
+      <span class="card-tag warning">注意事项</span>
+      <div class="card-title">惊喜k线的陷阱</div>
+      <p class="card-text">前期一波大的上涨出现了抢购高潮。高点处出现巨大阴线，但对比前期强多头趋势来说单靠这根k线反转力度不足，要看后续有无好的跟随。惊喜k线后虽有一波二段行情，但力度可能非常弱。遇到这种行情首先考虑在高点上方买入人多还是卖出人多。不要问为什么，交易你看到的。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/1864ac78871c8ebe2a04815e0b127cf32fbdc111c79b4e42279a05e38a6ffada.jpg" alt="惊喜k线陷阱" loading="lazy">
+        <figcaption>惊喜k线后二段力度弱</figcaption>
+      </figure>
+    </div>
+
+  </div>
+</section>
+
+<!-- ========== STAGE 10: 楔形反转 ========== -->
+<section class="stage" id="ch10">
+  <div class="stage-header">
+    <span class="stage-num">第十章</span>
+    <h2 class="stage-title">楔形反转（1）—（2）</h2>
+  </div>
+  <p class="stage-desc">三推楔形的识别、画法、交易策略。好wedge与坏wedge的判断，嵌套楔形与抛物线楔形。</p>
+  <div class="card-grid cols-2">
+
+    <div class="card key-concept concept fullwidth">
+      <span class="card-tag concept">核心概念</span>
+      <div class="card-title">Wedge 三推楔形</div>
+      <p class="card-text">三推楔形形成原理：1号高点出现后有回调，2号和3号高点是对1号高点的尝试突破，一上去立刻下来。当市场两次尝试做某件事都没有成功，很有可能会向另一边反转。收敛形态中，在3的位置市场多空达成共识——现价太高没人愿意买，这时市场就会下跌向下寻找买家。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/feda1357041d63fdb464fcae104a0a5cda2c8ccca7e65b2e689d92d0104abfe4.jpg" alt="楔形原理" loading="lazy">
+        <figcaption>三推楔形形成原理</figcaption>
+      </figure>
+    </div>
+
+    <div class="card">
+      <span class="card-tag concept">画法</span>
+      <div class="card-title">楔形画法</div>
+      <p class="card-text">三点连一条线。红色线达不到第三点，蓝色线2号位置超出线外。选择超出的点去画更容易发现市场在做什么。绝大多数楔形都不完美，要么超出要么达不到。超出和达不到选超出更容易看出市场想干什么。越完美的楔形后续反转成功率越高。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/d3678e27c01437ebd0f161d4364e2a9c4ec8393e9a66d0a046da6247fb9c2fe9.jpg" alt="楔形画法" loading="lazy">
+        <figcaption>楔形的两种画法</figcaption>
+      </figure>
+    </div>
+
+    <div class="card">
+      <span class="card-tag case">好的楔形</span>
+      <div class="card-title">好的楔形反转——有重叠</div>
+      <p class="card-text">重叠度高代表在多头背景下，逆势交易者挂单后逢高加仓也可获利。通过判断逆势交易者是否赚钱来判断趋势强弱。反转往往早就开始了，当逆势交易者可以赚钱时，趋势被反转的可能性就更高。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/4e40eb7bde5fd7e2c80afe00be956254fb123c9a295cbfaa91242648d8f99341.jpg" alt="好楔形重叠" loading="lazy">
+        <figcaption>好的楔形反转——有重叠</figcaption>
+      </figure>
+    </div>
+
+    <div class="card">
+      <span class="card-tag warning">坏的楔形</span>
+      <div class="card-title">坏的楔形——强趋势中的假楔形</div>
+      <p class="card-text">在强趋势中可以找到很多楔形，市场无视了它们继续按原趋势突破。这些不能算作wedge，而是窄通道、强趋势。要注意逆势空头能否赚钱——若逆势交易者持续亏损，那这些看似楔形的结构其实只是强趋势的窄通道。窄通道里不要去数wedge做反转。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/ab870f4834d66b982c7b736282389e7687abf46b06a73eca59800f6f0114e301.jpg" alt="坏楔形" loading="lazy">
+        <figcaption>强趋势中的假楔形</figcaption>
+      </figure>
+    </div>
+
+    <div class="card fullwidth">
+      <span class="card-tag concept">嵌套楔形</span>
+      <div class="card-title">嵌套式楔形 Nested Wedge</div>
+      <p class="card-text">同时出现三个楔形，不管画哪个线、找哪个楔形，都在寻找同一个反转机会，因此成功率更高。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/647612c7b9c72158b9eb9fdfbf4620bd2de8d38c2b10cb4681e7a7bd5336ff5b.jpg" alt="嵌套楔形" loading="lazy">
+        <figcaption>三重嵌套楔形</figcaption>
+      </figure>
+    </div>
+
+    <div class="card fullwidth">
+      <span class="card-tag case">各类楔形</span>
+      <div class="card-title">缩减版楔形 & 各种变体</div>
+      <p class="card-text">楔形顶一般来说高点要一个比一个高，但图中的楔形3并没有超过2就向下反转了——卖压太大，无人继续做多。三推动作比三点一线更重要。双底/双顶突破失败也是楔形。不仔细看无法发现的微型楔形也是重要的反转信号。看到大k线要知道小级别发生了什么。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/ef0f0978091b5f6277499effb83d02b57d5c7dd9cb2e7b3a9b4f44fb36a3451a.jpg" alt="缩减楔形" loading="lazy">
+        <figcaption>缩减版楔形</figcaption>
+      </figure>
+    </div>
+
+    <div class="card fullwidth">
+      <span class="card-tag example">失败的楔形</span>
+      <div class="card-title">失败的楔形反转 & Measured Move</div>
+      <p class="card-text">楔形反转如果失败会向反方向走很远。3号位直接入场的多头有机会盈利，一旦楔形被向下跌破则可能走出反向等距行情，一定要及时止损。在走出反向等距行情前不要轻易再去做多，可以追空。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/e35f4c5e3fd50e425f389b641b747f705e96747f4b324d92e7392a741b6e8181.jpg" alt="失败楔形" loading="lazy">
+        <figcaption>失败的楔形反转</figcaption>
+      </figure>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/56bd75bc4f3696185b35f5b0e59fda40ea8b3d40cda5028c523a345d7a7ca115.jpg" alt="失败楔形案例" loading="lazy">
+        <figcaption>失败楔形的反向行情</figcaption>
+      </figure>
+    </div>
+
+    <div class="card fullwidth">
+      <span class="card-tag concept">交易策略</span>
+      <div class="card-title">1st Entry交易方法</div>
+      <p class="card-text">可以采用1st entry的情况：好的Wave（重叠）、开盘反转、震荡区间边缘的Wedge、Nested Wedge嵌套式楔形、楔形牛旗/熊旗（顺大逆小）。</p>
+      <p class="card-text"><strong>从顺势角度考虑：</strong>1. 出现强势突破不要和第一段趋势对着干，因为大概率会有2nd leg，顺着趋势坚定持有甚至加仓。2. 区间内第二段趋势往往看起来特别强，但大部分会突破失败变成2nd leg trap。3. 趋势到第三段开始考虑减仓止盈。</p>
+      <p class="card-text">不是所有的wedge都有大反转，很多是小反转/震荡区间，采用scalp+swing的策略。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/9ff5b5bfd58965202d91c3b0b7dca710a3d8a486284d6655717d1af2615bc421.jpg" alt="交易方法" loading="lazy">
+        <figcaption>楔形反转交易方法</figcaption>
+      </figure>
+    </div>
+
+    <div class="card key-concept concept fullwidth">
+      <span class="card-tag concept">抛物线楔形</span>
+      <div class="card-title">抛物线楔形 Parabolic Wedge</div>
+      <p class="card-text">每条线斜率越来越大、越来越倾斜，每条线内的大阳线相较于前一条越来越大，进入了抛物线楔形。进入了抢购高潮，一旦衰竭就会进入深幅回调甚至可能被反转。当看到加速上涨体积越来越大的阳线后出现了体积很大且收在低位的阴线时，多头及时离场保护利润，空头在信号k线下方做反转。</p>
+      <p class="card-text">高潮后未必马上反转，可能会进入震荡行情。无尽的回调即是反转。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/1975e753300b4d58f068d69b945eff26d700ac4acabbed32cfad54b675f4f383.jpg" alt="抛物线楔形" loading="lazy">
+        <figcaption>抛物线楔形</figcaption>
+      </figure>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/2419b2f039517f0fd4d494b43b4891fd989a0de2632900d9abc8597cbe3fb4bf.jpg" alt="做空信号" loading="lazy">
+        <figcaption>抛物线楔形后的反转信号</figcaption>
+      </figure>
+    </div>
+
+  </div>
+</section>
+
+<!-- ========== STAGE 11: 止盈目标位 ========== -->
+<section class="stage" id="ch11">
+  <div class="stage-header">
+    <span class="stage-num">第十一章</span>
+    <h2 class="stage-title">止盈目标位（1）—（2）</h2>
+  </div>
+  <p class="stage-desc">Measured Move (MM) 测量移动、Leg1=Leg2、震荡区间高度、实际风险止盈、目标位延伸。</p>
+  <div class="card-grid cols-2">
+
+    <div class="card key-concept concept fullwidth">
+      <span class="card-tag concept">MM目标位</span>
+      <div class="card-title">Measured Move 测量移动</div>
+      <p class="card-text">三种MM判断方法：1. 一段=二段（Leg1=Leg2）；2. 震荡区间高度；3. 突破高度/惊喜k线高度。目标位往往也是支撑压力位。找目标位的目的是止盈参考。强势突破一般都有二段行情，突破后有60%概率向某个方向走出等距行情。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/689e1fe3817ad08ac27a1fe4bdd613819c1ff88aef36c98efe6854811edda53c.jpg" alt="MM目标位" loading="lazy">
+        <figcaption>Measured Move 测量移动</figcaption>
+      </figure>
+    </div>
+
+    <div class="card fullwidth">
+      <span class="card-tag case">案例</span>
+      <div class="card-title">震荡区间突破目标位</div>
+      <p class="card-text">震荡区间后向着某个方向突破，突破后第一目标位就是将区间高度翻一倍。到达目标位后很多多头止盈，空头也提前在此挂单，导致价格下跌。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/7434056851107c1899bdfcac68b22f220a89796390eda4b5d19ef57610b38ad4.jpg" alt="震荡区间目标位" loading="lazy">
+        <figcaption>震荡区间高度翻一倍</figcaption>
+      </figure>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/95a0c87d3c50fc5c2649ab57a9926f871340671d199073431c036c46fbbaec68.jpg" alt="开盘震荡区间" loading="lazy">
+        <figcaption>开盘震荡区间突破</figcaption>
+      </figure>
+    </div>
+
+    <div class="card fullwidth">
+      <span class="card-tag example">Leg1=Leg2</span>
+      <div class="card-title">Leg1=Leg2 N字调整</div>
+      <p class="card-text">第一段暴涨后出现几个月的盘整（或看为几段式回调），随后有了第二段上涨。当发生深幅度回调后，第二段上涨的最小目标位就是第一段上涨的等距。图中第二段上涨中多根做多信号k线回到EMA20上方，与EMA20之间有缺口，表现多头强势。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/23dee168ed62459e680cf179e12c24f8f639409b8fdedfae0b9380a5be3b2356.jpg" alt="N字调整" loading="lazy">
+        <figcaption>Leg1=Leg2 N字调整</figcaption>
+      </figure>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/47abe914e84fc98c7b045e53433e49b5eb3ae2443074eb1dd89e91eb131c0efb.jpg" alt="区间高度翻倍" loading="lazy">
+        <figcaption>震荡区间高度翻倍目标位</figcaption>
+      </figure>
+    </div>
+
+    <div class="card fullwidth">
+      <span class="card-tag concept">k线实体测量</span>
+      <div class="card-title">K线实体测量</div>
+      <p class="card-text">强势突破由连续几根大的趋势k线组成，把它们的实体部分向上翻一倍，有60%概率达到目标位。收盘价是最重要的。有时一根大k线本身就是一段强势突破。连续小k线突然出现巨大阴线（惊喜k线），出现后大概率有二段行情。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/615f2dd09279b2c92ca970253ac8e5df6bd69cf11104737176da9df6b4445b8f.jpg" alt="K线实体测量" loading="lazy">
+        <figcaption>K线实体等距测量</figcaption>
+      </figure>
+    </div>
+
+    <div class="card fullwidth">
+      <span class="card-tag example">目标位延伸</span>
+      <div class="card-title">目标位的延伸</div>
+      <p class="card-text">强势突破出现惊喜k线，实体翻一倍作为第一个目标位。后面连续阳线收在一半以上后出现回调，将这些阳线看作第一段，实体向上一倍为第二目标位。或将后面当作震荡区间被突破，将区间高度向上一倍当作目标位。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/e9fa941b83222bf57e46e66783ccf03a367ac12a9ee4ccfe09d16f7d35c5ec9a.jpg" alt="目标位延伸1" loading="lazy">
+        <figcaption>目标位延伸</figcaption>
+      </figure>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/2d3862cdef2144eafde7cae532e3d30659b824bacd5825dae292c046cefc634c.jpg" alt="目标位延伸2" loading="lazy">
+        <figcaption>多重目标位</figcaption>
+      </figure>
+    </div>
+
+    <div class="card">
+      <span class="card-tag concept">实际风险</span>
+      <div class="card-title">实际风险止盈 Actual Risk</div>
+      <p class="card-text">实际所冒风险的作用：将其一倍、二倍作为止盈目标位。买入后并未立刻上涨而是进入回调，几天后才创了新高。买入时大家承受风险不同。实际所冒风险在开仓前无法提前预知。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/da2bce0811c6210af6fdb3155d43e1f5e06436c424e3a5b342ca8768716295e4.jpg" alt="实际风险" loading="lazy">
+        <figcaption>实际风险止盈</figcaption>
+      </figure>
+    </div>
+
+    <div class="card">
+      <span class="card-tag summary">三种情况</span>
+      <div class="card-title">实际风险三种情况</div>
+      <p class="card-text">1. 直接打掉止损；2. 直接涨没有Actual Risk或非常小，不用Actual Risk；3. 先小跌再涨，Actual Risk不大——两倍Actual Risk；4. 跌得比较深但没有打到止损，Actual Risk比较大——一倍Actual Risk。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/9f3536370f55e993477dc130eca67bdd11e5fb5745c1bc0a5cf98eb20ffaebbb.jpg" alt="实际风险三种情况" loading="lazy">
+        <figcaption>实际风险三种情况</figcaption>
+      </figure>
+    </div>
+
+  </div>
+</section>
+
+<!-- ========== STAGE 12: 止损（1-3） ========== -->
+<section class="stage" id="ch12">
+  <div class="stage-header">
+    <span class="stage-num">第十二章</span>
+    <h2 class="stage-title">止损（1）—（3）</h2>
+  </div>
+  <p class="stage-desc">重要低点、重要高点、TBTL（两段10k）、止损管理、反转交易与趋势交易的止损区别。</p>
+  <div class="card-grid cols-2">
+
+    <div class="card key-concept concept fullwidth">
+      <span class="card-tag concept">核心原则</span>
+      <div class="card-title">市场的不确定性 & 交易员4项技能</div>
+      <p class="card-text">不存在完美入场/止损。交易员的4项技能：1. 知道市场在做什么，接下来会怎么做；2. 知道什么时候入场；3. 入场之后如何管理手中的仓位；4. 软实力（管理）。</p>
+      <p class="card-text">目标位or提前止盈？依赖初始止损or提前离场？窄止损or宽止损？争取打平or小亏离场？加仓？</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/450309546cae4ebb9604491e3a73c262fce45ae44e2609c4d9832e89e4866c39.jpg" alt="止损" loading="lazy">
+        <figcaption>止损（1）</figcaption>
+      </figure>
+    </div>
+
+    <div class="card fullwidth">
+      <span class="card-tag concept">重要低点</span>
+      <div class="card-title">重要低点 vs 次要低点</div>
+      <p class="card-text">如果低点后面行情强势突破创新高，这个低点就是重要低点。做多时止损放在重要低点下方。每次突破创新高后止损随之上移。</p>
+      <p class="card-text">次要低点被跌破说明不了什么，上涨趋势依然成立。尤其要关注低点抬高，因为对于做多的多头而言，止损是在某个低点下方的。上涨趋势重要低点不断抬高。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/25a1aa1dd562bbf4eca1a2d719009ba3eac79d73c8e74ca96feb5508d65b7c4d.jpg" alt="重要低点" loading="lazy">
+        <figcaption>重要低点不是每次都合理的</figcaption>
+      </figure>
+    </div>
+
+    <div class="card fullwidth">
+      <span class="card-tag case">案例分析</span>
+      <div class="card-title">重要低点被跌破</div>
+      <p class="card-text">前期上涨趋势不断创新高，重要低点不断抬高。直到顶部重要低点被跌破后，对于多头来说是合理离场位置。但反转往往一波三折，在关键位置出现大幅度反弹。有些交易者会因此选择不止损，但最终可能转为下降趋势。离场要遵循入场的前提逻辑——入场前提不成立了，无论盈亏都要离场。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/f8f638154a94ebd7ddb602c430fe4639222abd5a7983f50542131a7ad1e61788.jpg" alt="重要低点破位" loading="lazy">
+        <figcaption>重要低点被跌破</figcaption>
+      </figure>
+    </div>
+
+    <div class="card fullwidth">
+      <span class="card-tag concept">TBTL</span>
+      <div class="card-title">TBTL——两段十k回调</div>
+      <p class="card-text">TBTL: 10 bars, 2 legs —— 两段十k。如果判断市场要回调甚至反转，回调目标至少持续10根k线、至少两段式回调。回调可以是下跌也可以是横盘。很多时候回调都是两段或三段的，对于做顺势交易者最好等待结构走完后再介入。对于逆势做反转交易者，目标位可以参考TBTL。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/b834ba1823fd56b1847fa24977aee5f443689579388b495c142c43bcd5ca6d6e.jpg" alt="TBTL" loading="lazy">
+        <figcaption>两段十k回调</figcaption>
+      </figure>
+    </div>
+
+    <div class="card fullwidth">
+      <span class="card-tag case">回调入场</span>
+      <div class="card-title">回调后的入场策略</div>
+      <p class="card-text">回调后出现阳线，在高1入场点买入，止损放在哪里？止损距离越近，被打到概率越高。看到第一段回调力度强，最好用第二入场点（高2）。初始仓位小+止损远=第二次回调后可加仓。很多回调都是两段或三段，最好等待结构走完再介入。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/1397814aedf593ce4a26a7c036110cdec2d6873e48f45d8ffee5ad99a6a282c0.jpg" alt="回调入场" loading="lazy">
+        <figcaption>回调后入场策略</figcaption>
+      </figure>
+    </div>
+
+    <div class="card">
+      <span class="card-tag concept">重要高点</span>
+      <div class="card-title">下降趋势的重要高点</div>
+      <p class="card-text">下降趋势中高低点不断降低，更重要的是高点的不断降低。空头的止损放在某个高点上方的。反弹到某个高点后价格强势向下跌破创新低，该高点就是重要高点。止损越近被打到概率越高但亏损小，止损越远打到概率低但亏损大。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/dbec3f01191a25774a162a7780d889843c074628adca50c6a642bcb394b9c538.jpg" alt="重要高点" loading="lazy">
+        <figcaption>下降趋势的重要高点</figcaption>
+      </figure>
+    </div>
+
+    <div class="card fullwidth">
+      <span class="card-tag concept">反转与止损</span>
+      <div class="card-title">止损（3）——反转交易的止损</div>
+      <p class="card-text">为什么新手喜欢做反转？1. 均值回归——认为涨多要跌跌多要涨；2. 害怕亏钱——止损小；3. 盈亏比好——以小博大。</p>
+      <p class="card-text">但概率极低。即使每次亏损很小，小亏损累计起来也是一笔大亏损。做交易要有依据，要知道自己等待的是什么样的机会。要等待市场达到某个阻力或支撑位后出现反转信号、出现另一方强势的信号。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/6721e66ec8f5f7bd3d23982348033ef349cad69f230c5800779e6375ef7c1ef6.jpg" alt="反转止损" loading="lazy">
+        <figcaption>反转交易的止损</figcaption>
+      </figure>
+    </div>
+
+    <div class="card fullwidth">
+      <span class="card-tag case">小双底反转</span>
+      <div class="card-title">小双底与二次反转</div>
+      <p class="card-text">强下降趋势的第一次反转尝试80%概率失败。直到第二次出现高点高于前一根高点的K线时，成功率变高。两次低点组成小双底结构。绝大多数反转都包含双底——因为V形反转概率太低。LLMTR (Lower Low Major Trend Reversal)：更低低点后的主要趋势反转，第二次反转成功率更高。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/c648b4d514437f7321f7b3e32937e7472a25d457feef0f549a44cafb59bc1c05.jpg" alt="小双底" loading="lazy">
+        <figcaption>小双底反转结构</figcaption>
+      </figure>
+    </div>
+
+    <div class="card fullwidth">
+      <span class="card-tag concept">MTR结构</span>
+      <div class="card-title">MTR 大反转结构</div>
+      <p class="card-text">大反转的本质：第一次的小反转足够强势，随后恢复原趋势，在前高附近突破又失败，大反转概率更高。小反转到大反转的过程。第一次尝试跌破均线大概率失败，但如果空头将一整根k线完全放在均线下方，非常强势。价格回到前高附近后有更多人愿意做空押注大反转。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/55c0398dd6fdf72ec7b39f134c6872a1067ce250c2c653fe9d6c2b82f76e5d7f.jpg" alt="MTR结构" loading="lazy">
+        <figcaption>MTR大反转结构</figcaption>
+      </figure>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/9e907dfd7ae5f85d9a4e03b6935e030c313036e6208e945eeb752a47286f946c.jpg" alt="MTR案例" loading="lazy">
+        <figcaption>MTR反转案例</figcaption>
+      </figure>
+    </div>
+
+    <div class="card fullwidth">
+      <span class="card-tag concept">初始止损设置</span>
+      <div class="card-title">初始止损设置方法</div>
+      <p class="card-text">通常把止损放在最低点下方1tick。想要设置略微宽一点的止损：1. 固定金额止损（如5ticks、10ticks）预留空间防假突破；2. 根据入场价格定；3. 将原来止损距离向下翻一倍。</p>
+      <p class="card-text">初始止损看上去很大，但具体承担多少风险在开仓时无法知道。大部分情况下初始的保护性止损都不应该被打掉。无论哪种方法关键是要预留一定空间防止市场假突破。也可以坚持小止损，被止损后看到新信号再次入场。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/37658543f72a42c93588d31a1d8eca308a3a9eb854a3ca64ce4809b38ea8e930.jpg" alt="初始止损" loading="lazy">
+        <figcaption>初始止损设置方法</figcaption>
+      </figure>
+    </div>
+
+    <div class="card fullwidth">
+      <span class="card-tag summary">利润保护</span>
+      <div class="card-title">止损移动与利润保护</div>
+      <p class="card-text">把止损移动到入场价至少不亏钱——符合情绪和心理，但没有数学依据和价格行为依据。尤其对波段交易者来说，入场点反而容易被回测，波段交易者可以接受入场价格被回测一次，但当第二次价格回来时很多人会失望离场。</p>
+      <p class="card-text">强势突破后将止损移动到2000美金跌幅处控制回撤。如果继续上涨止损也随着价格抬高。交易者矛盾——既想保护利润又想让利润奔跑，可以全部止盈或止盈一半。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/12e8871cc2ee630e456ec1109d3d7f82d9a8f3bab181e4c510d9991e1197767c.jpg" alt="保护利润" loading="lazy">
+        <figcaption>止损移动保护利润</figcaption>
+      </figure>
+    </div>
+
+  </div>
+</section>
+
+<!-- ========== STAGE 13: 震荡区间止损 & 期权 ========== -->
+<section class="stage" id="ch13">
+  <div class="stage-header">
+    <span class="stage-num">第十三章</span>
+    <h2 class="stage-title">震荡区间内的止损 & 期权策略</h2>
+  </div>
+  <p class="stage-desc">震荡区间内假突破频发，如何设置止损；突破单市场与限价单市场的区别；期权对冲策略在震荡区间中的应用。</p>
+  <div class="card-grid cols-2">
+
+    <div class="card key-concept concept fullwidth">
+      <span class="card-tag concept">震荡区间</span>
+      <div class="card-title">震荡区间内的止损</div>
+      <p class="card-text">在震荡区间内会有很多向上向下的假突破，而且假突破后的反转往往非常剧烈，甚至不给你反应时间。通常用宽一点止损来提高胜率防止假突破，但止损一宽风险变大，盈亏比也就变差了。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/8aeac1871142d5d1cf4ba6fa89ccdd66844997039456b34651c4b9dce4fe56cc.jpg" alt="震荡区间止损" loading="lazy">
+        <figcaption>震荡区间内止损</figcaption>
+      </figure>
+    </div>
+
+    <div class="card fullwidth">
+      <span class="card-tag concept">突破单 vs 限价单</span>
+      <div class="card-title">突破单市场与限价单市场</div>
+      <p class="card-text"><strong>突破单市场：</strong>上涨趋势中所有向上突破都成功。多头在向上突破时买入，押注所有突破都会成功。</p>
+      <p class="card-text"><strong>限价单市场：</strong>逢高卖出，逢低买入，押注所有突破都失败。看到大阴线追空与大阳线追多都会亏钱。在顶部挂限价卖单，底部挂限价买单，押注突破会失败。</p>
+      <p class="card-text">实际操作难点：1. 心理上无法适应——看到强势突破却要交易反转；2. 不知道如何判定真/假突破；3. 即使介入了也很难设定目标位。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/70a2c46a51930b547288846ba95f5f0e04f140d41ad7885312dcacacb5144c3c.jpg" alt="突破单市场" loading="lazy">
+        <figcaption>突破单市场</figcaption>
+      </figure>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/fa1ad5429f93b86e79f5ab17b417cb7e101ca4a8eb340bab8362b1071b5ab5fe.jpg" alt="限价单市场" loading="lazy">
+        <figcaption>限价单市场</figcaption>
+      </figure>
+    </div>
+
+    <div class="card fullwidth">
+      <span class="card-tag concept">期权策略</span>
+      <div class="card-title">期权对冲策略 Credit Put Spread</div>
+      <p class="card-text">假设股票ABC在某震荡区间，押注它不会跌破$300：</p>
+      <p class="card-text"><strong>方法1：</strong>直接在$300买入股票，设置止盈止损。</p>
+      <p class="card-text"><strong>方法2：</strong>卖出行权价$300的put（看跌期权），做空看跌期权变成保守的做多策略。到期时股价大于$300利润固定。在震荡区间中利润被限制反而变成优点——不需要考虑在哪里止盈。</p>
+      <p class="card-text"><strong>策略3：</strong>Credit Put Spread / Debit Call Spread —— 两条腿的对冲期权形成对冲效果。固定利润（本来利润有限）+ 固定亏损（防止意外突破）+ 解放大脑无心理压力 + 可随时调整 + 盈亏比固定只需要概率。</p>
+      <p class="card-text">难点：到期时间的选择、对市场周期变化的敏感度。</p>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/26fdb74177877f4fcb427309c8a9bc9cdde43787955ed226289bb4f776123a08.jpg" alt="期权策略" loading="lazy">
+        <figcaption>期权对冲策略</figcaption>
+      </figure>
+      <figure class="card-figure">
+        <img src="../resource/价格行为-方方土_副本/auto/images/c8efa3da82ddc3f76333587101b01935413bf4b940a731e6beead1f4367f958a.jpg" alt="Credit Put Spread" loading="lazy">
+        <figcaption>Credit Put Spread对冲</figcaption>
+      </figure>
+    </div>
+
+  </div>
+</section>
+
+</div>
+
+<!-- ========== FOOTER ========== -->
+<footer class="footer">
+  <p>内容来源：《价格行为——方方土》 &middot; 仅供学习参考</p>
+</footer>
+
+<!-- ========== LIGHTBOX ========== -->
+<div class="lightbox" id="lightbox">
+  <img src="" alt="">
+</div>
+
+<!-- ========== JAVASCRIPT ========== -->
+<script>
+(function() {
+  'use strict';
+
+  // --- Lightbox ---
+  const lightbox = document.getElementById('lightbox');
+  const lightboxImg = lightbox.querySelector('img');
+  const figures = document.querySelectorAll('.card-figure img');
+  figures.forEach(function(img) {
+    img.addEventListener('click', function(e) {
+      e.stopPropagation();
+      lightboxImg.src = this.src;
+      lightbox.classList.add('active');
+    });
+  });
+  lightbox.addEventListener('click', function() {
+    this.classList.remove('active');
+  });
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') lightbox.classList.remove('active');
+  });
+
+  // --- Card navigation: one card at a time with prev/next ---
+  document.querySelectorAll('.card-grid').forEach(function(grid) {
+    var cards = grid.querySelectorAll('.card');
+    if (cards.length === 0) return;
+
+    // track current index on the grid element
+    grid._cardIdx = 0;
+
+    // start with first card visible
+    cards[0].classList.add('active');
+
+    // inject prev/next controls
+    var nav = document.createElement('div');
+    nav.className = 'card-nav';
+    nav.innerHTML = [
+      '<button class="card-prev" disabled>&larr; 上一张</button>',
+      '<span class="card-counter">1 / ' + cards.length + '</span>',
+      '<button class="card-next">下一张 &rarr;</button>'
+    ].join('');
+
+    var prevBtn = nav.querySelector('.card-prev');
+    var nextBtn = nav.querySelector('.card-next');
+    var counter = nav.querySelector('.card-counter');
+
+    function updateCards() {
+      var idx = grid._cardIdx;
+      cards.forEach(function(c, i) {
+        c.classList.toggle('active', i === idx);
+      });
+      counter.textContent = (idx + 1) + ' / ' + cards.length;
+      prevBtn.disabled = idx === 0;
+      nextBtn.disabled = idx === cards.length - 1;
+    }
+
+    prevBtn.addEventListener('click', function() {
+      if (grid._cardIdx > 0) { grid._cardIdx--; updateCards(); }
+    });
+    nextBtn.addEventListener('click', function() {
+      if (grid._cardIdx < cards.length - 1) { grid._cardIdx++; updateCards(); }
+    });
+
+    // expose so activateTab can call it
+    grid._updateCards = updateCards;
+
+    grid.parentNode.insertBefore(nav, grid.nextSibling);
+  });
+
+  // --- Tab switching ---
+  const sections = document.querySelectorAll('.stage');
+  const navLinks = document.querySelectorAll('.header-nav a');
+
+  function activateTab(tabId) {
+    sections.forEach(function(section) {
+      section.classList.remove('active');
+      if (section.id === tabId) section.classList.add('active');
+    });
+    navLinks.forEach(function(link) {
+      link.classList.remove('active');
+      if (link.dataset.tab === tabId) link.classList.add('active');
+    });
+    // reset card index to first for the activated tab
+    var activeGrid = document.querySelector('#' + tabId + ' .card-grid');
+    if (activeGrid) {
+      activeGrid._cardIdx = 0;
+      if (activeGrid._updateCards) activeGrid._updateCards();
+    }
+  }
+
+  navLinks.forEach(function(link) {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      activateTab(this.dataset.tab);
+    });
+  });
+
+  // Activate first tab on load
+  activateTab('ch1');
+
+})();
+</script>
+</body>
+</html>
