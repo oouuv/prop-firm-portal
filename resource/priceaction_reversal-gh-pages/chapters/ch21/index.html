@@ -1,0 +1,1442 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="AL Brooks《价格行为交易之反转篇》在线教程">
+      
+      
+        <meta name="author" content="AL Brooks">
+      
+      
+      
+        <link rel="prev" href="../ch20/">
+      
+      
+        <link rel="next" href="../ch22/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>第21章 详细的日内交易示例 - AL Brooks 价格行为交易之反转篇</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#21" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../.." title="AL Brooks 价格行为交易之反转篇" class="md-header__button md-logo" aria-label="AL Brooks 价格行为交易之反转篇" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            AL Brooks 价格行为交易之反转篇
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              第21章 详细的日内交易示例
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="切换至深色模式"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="切换至深色模式" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="切换至浅色模式"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="切换至浅色模式" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="AL Brooks 价格行为交易之反转篇" class="md-nav__button md-logo" aria-label="AL Brooks 价格行为交易之反转篇" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    AL Brooks 价格行为交易之反转篇
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    首页
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第一部分 趋势反转
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第一部分 趋势反转
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第1章 反转交易范例
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch02/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第2章 反转强弱的征兆
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第3章 重要趋势反转
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch04/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第4章 高潮反转
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch05/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第5章 楔形和其他三推反转形态
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch06/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第6章 扩张三角形
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch07/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第7章 最终旗形
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch08/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第8章 双重顶和双重底回撤
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch09/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第9章 失败
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch10/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第10章 日线图上的巨量反转
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第二部分 日内交易
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第二部分 日内交易
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch11/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第11章 一天中的关键时刻
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch12/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第12章 市场
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch13/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第13章 时间框架和图表类型
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch14/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第14章 全球期货交易系统
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch15/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第15章 总在场内
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch16/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第16章 极端刮头皮
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第三部分 第一小时（开盘区间）
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第三部分 第一小时（开盘区间）
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch17/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第17章 与盘前相关的形态
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch18/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第18章 与昨天相关的形态
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch19/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第19章 开盘形态和反转
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch20/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第20章 缺口开盘
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第四部分 融会贯通
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第四部分 融会贯通
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第21章 详细的日内交易示例
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch22/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第22章 日线图、周线图和月线图
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch23/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第23章 期权
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch24/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第24章 最佳交易
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch25/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第25章 交易指引
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="21">第21章 详细的日内交易示例<a class="headerlink" href="#21" title="Permanent link">&para;</a></h1>
+<p>第 21 章 详细的日内交易示例</p>
+<p>这一章给出了很多合理的日内交易的详细示例，包括三本书中所有的基本思想。</p>
+<p><img alt="5851a14b601a0d9b12538841cfec2f7f411fc7884c81e43a8e054ac8a2ff5cff.jpg" src="../../images/5851a14b601a0d9b12538841cfec2f7f411fc7884c81e43a8e054ac8a2ff5cff.jpg" /></p>
+<p>图 21.1 是 10 年期美国国库中期国库券图表，每一棒代表 10,000 股。一旦一棒的成交量越过 10,000 张合约，它就收盘。每一棒中，由于最后一笔交易的合约数量可能为任意数字，所以大部分棒线的合约数量多于 10,000 张，而不是刚好是 10,000 张。由于棒线不是以时间为基础的，所以有些棒线可能只花几秒便会形成，而有些棒线可能要花 10 几分钟才能超过10,000 张合约。</p>
+<p>棒 3、4 和 5 是空头趋势中测试均线时的做空架构。</p>
+<p>棒 6 是一个二次入场空头趋势通道线过冲和向上反转，但是信号棒较弱（一个小十字星）。然而，从棒6楔形反转开始的反弹突破了趋势线，测试低点时形成一个做多架构。</p>
+<p>棒 7 是一个两条腿更高低点，但它是一个十字星，是双向交易而非强势买进的象征，而且它出现在两条强空头趋势棒之后。虽然这是一个最低限度上可以接受的买进架构，但是最好等待较强的信号。如果你选择这个架构，那么就会在棒 8 下方离场，因为那是均线处的一个低点2做空架构，而且它有一个空头实体。那是一个强卖出信号，逆势交易者们应该离场，甚至要在空头二次尝试恢复趋势时反转头寸。试图在空头趋势中买进的逆势交易者们，在低点 2 信号处总应离场，除非趋势已经明确地反转，低点 2 架构还可能失败。棒 11 便是一个这样的例子。</p>
+<p>棒 9 是一个更低低点重要趋势反转，是突破结束于棒 6 的楔形底后的突破回撤，也是一个预期出现强趋势反转的买进架构。它也是一个空头趋势通道过冲和反转，它是一条多头反转棒和一个双棒反转。从棒 6 到棒 9 的交易区间是一条紧凑的通道，成为空头趋势中的最终旗形。另外，它是跌至棒 2 的下跌尖峰之后的较大楔形通道之后的反转。尖峰和通道空头趋势中的通道常常以三推结束，这里便是如此（棒2、6和9）。</p>
+<p>棒10向上突破一条内包棒，那条内包棒标志着第一波微型回撤（空头趋势棒）的结束，所以交易者们可能会在它的上方做多，或者从棒 9 上方开始加大他们的多头头寸。在尖峰和通道空头趋势（棒 2 使尖峰结束）以及三次下推（棒 2、6 和 9 是下推终点）之后，很可能形成延长的两条腿上涨，所以棒 10 暂停很可能只是第一条上涨腿的一部分，而不是第二条上涨腿的起点。在一条持续了 20 棒或 30 棒的空头通道之后，调整很可能至少包含一半的棒线，这是一条一般性规则。如果调整太小，那么空头在做空时会有所犹豫，而多头则继续买进，因为他们认为调整需要更多棒线才能清晰。双方都需要看到市场是否正在反转，从棒 10 开始的四棒多头上涨尖峰是反转正在进行的很好证明。空头尖峰和通道形态很可能回溯到通道起点棒 3 附近，果然如此。多头常常在那里获利了结。在这一区域，有些多头开始加仓，一旦市场返回他们的第一个入场点，他们常常会退出整个头寸。他们把最初在棒 2 和棒 3 之间建立的多头头寸了结，差不多是盈亏平衡，而所有在较低价位入场的交易赚到了利润。空头常常会再次积极做空，因为他们知道市场在当天早些时候从这一区域开始下跌，可能会从那里再次下跌。当天结束，没有足够的时间让那些空头获利，所以他们选择不在收盘前做空。</p>
+<p>P221</p>
+<p>棒 11 是一个高点 2 买进架构（高点 1 在两棒之前），出现在一个强多头尖峰之后。交易者们正预期至少出现两条上涨腿，与尖峰高度相比，这波两条腿回撤太小，所以第一条上涨腿可能没有结束。交易者们认为可能发生如下三种情况中的一种：回撤非常小，所以它只是一条复杂的第一条腿的一部分；第一条腿结束，第二条上涨腿正在开始；或者第一条腿结束，将出现更深的回撤，然后向上运动超越这条腿的顶部。这三种可能都意味着市场会继续走高，所以这是一个很棒的买进机会。是的，棒11是一个双棒反转顶的入场棒，它是空头趋势中一个均线缺口棒做空架构的二次入场。这可能会引起对空头低点的测试。然而，在大部分交易者思想当中，上涨尖峰已经令市场翻转为总在场内多头，所以大幅下跌的可能性非常之小。</p>
+<p>大部分交易者认为反转比做空架构强得多。</p>
+<p><img alt="54101c08b915bc40e10c5b1cd1def9eb4659c0479fe5870c9393a66927d330e9.jpg" src="../../images/54101c08b915bc40e10c5b1cd1def9eb4659c0479fe5870c9393a66927d330e9.jpg" /></p>
+<p>如图 21.2 所示，在一个新高之后，5 分钟欧元兑美元（外汇）在棒 2 向下反转。这条多头腿拥有非常强的动能，连续 8 棒没有空头趋势棒，所以在跌破多头尖峰底部棒 1 之前，任何回撤都将测试棒 2 高点的可能性很高。棒 3 是一条均线缺口棒，也是对反弹起点棒 1 的突破测试。它与前面两棒构成一个微型楔形，应该至少会引起一波反弹。它也是强多头尖峰之后的一个楔形多头旗形。第一条下跌腿是棒 2 之前的第三棒，第二次下推是棒 2 之后第二棒，第三次下推是棒 3。</p>
+<p>市场形成一个三角形，结果成为一段紧凑的交易区间。三角形至少包含一个方向上的三推，棒 2、4 与 6 或 8 形成三次上推，而棒 1 或 3 与棒 5 和 7 形成三次下推。当存在多种可能时，有些交易者会认为某一种更重要，而另外一些交易者则认为其他的可能更重要。每当出现混淆时，市场是处于交易区间内，所以产处于突破模式，大部分交易者应该等待突破，而不是在紧凑的交易区间内交易。</p>
+<p>棒 8 是一次失败的向上突破尝试（比棒 4 高点低了 1 个跳动），在一条空头外包棒内反转穿过了区间底部。它与棒4或棒6形成一个双重顶空头旗形。</p>
+<p>棒 9 是一条突破回撤小型棒，位于那条外包棒的中点之上，提供了一个低风险做空机会。</p>
+<p>棒10是又一个突破回撤做空架构。</p>
+<p>棒 11 是均线处一个低点 2 做空架构，信号棒是一条空头棒，是第二次向下突破尖峰低点棒 3。</p>
+<p>棒 12 是均线处的又一个低点 2 做空架构。一定要不断设置你的订单。在看到多头十字星更高低点之后，空头可能变得自鸣得意，但是你仍然需要考虑市场是处于空头波段之中，如果它跌破这一棒，那么将形成一个低点 2 做空架构。</p>
+<p>P222</p>
+<p>棒 13 是趋势通道线过冲和卖出高潮棒之后的一个看涨的 ii 架构。这是一个抛物线楔形底，意味着市场向着最后的低点架构，然后向上反转。从棒10开始出现三次下推，头两次下推（棒 10 和 11 之后的波段低点）形成的趋势线的斜率，比第二次和第三次下推（棒 11 后面的波段低点和棒 13 之前的最后低点）形成的趋势线的斜率要低。</p>
+<p>市场已经趋势下跌了 20 棒左右，突然形成空头趋势中最大的一条空头趋势棒（棒 13 前面倒数第二棒）和最大的双棒空头尖峰。这个尖峰很有可能代表着耗尽，它可能是最后一批弱势多头离场，最后一批弱势空头做空。强势多头正在这里买进，会随着市场走低而加仓，而不是仓皇退出，强势多头只会在较大幅度的回撤之后做空。这使得市场很可能至少形成一波两条腿反弹，持续 10 棒左右。强多头内包棒表明买家正在取得控制权，它是一条不错的信号棒。</p>
+<p>棒 15 是三次上推，是第五均线缺口棒。从棒 13 开始的双棒多头尖峰是上涨尖峰。在向下调整之前，尖峰和楔形形态通常会再形成两次上推，比如这里。</p>
+<p>棒 16 是一个更高低点做多 ii 架构，因为在趋势通道线过冲和离开棒 13 低点入场之后，交易者们正预期至少形成两条上涨腿。它与截止棒 15 的楔形上升通道的底部棒 14 形成一个双重底多头旗形。大型空头趋势棒将空头套入，把弱势多头套出。</p>
+<p>图21.3 大豆在开盘时的买进高潮</p>
+<p><img alt="af627bfa466fd09068a76da5d64362831e921060b2bad0135989f201422972a2.jpg" src="../../images/af627bfa466fd09068a76da5d64362831e921060b2bad0135989f201422972a2.jpg" /></p>
+<p>如图 21.3 所示，大豆的 5 分钟图在开盘出现一波买进高潮，然后是一个小型的最终旗形，随后是一个楔形空头旗形和一个大型的第二条腿下跌。</p>
+<p>棒 2 是一个十字星交易区间，出现在棒 1 上涨尖峰之后，所以是一个糟糕的买进架构。市场很有可能横盘，而不是下跌。激进型交易者们设定限价单在前一棒高点做空，在棒 3 入场，预期高点 1 失败。棒 3 是一个低点 2 做空架构，一个更低高点，一个最终旗形做空架构。在棒 1 买进高潮和一个可能的开盘反转和当日高点之后，交易者们正寻找更多的调整。</p>
+<p>棒 4 过冲了一条空头趋势通道线，从一个与当天第一棒构成的双重底向上反转。这可能是当日低点。入场是在棒 6 ii 棒上方，它有一个多头收盘，而且收盘于均线上方。</p>
+<p>棒 9 是一个更低高点楔形空头旗形，与棒 3 形成一个双重顶空头旗形。它是从低点棒 4开始的一波四条腿上涨运动，使得它成为一个低点 4 变种。市场可能从棒 1 开始形成一波大型的两条波下跌，交易者们会在棒 9 下方或它后面的空头棒下方做空。你能够看到随后一棒是一条大型空头趋势棒，表明很多交易者在棒 9 后面的空头棒下方做空。</p>
+<p>棒 10 是趋势线突破后的一个突破回撤。</p>
+<p>棒 11 在创出当日新低后成为一条巨大的多头反转棒，形成一个双棒反转。然而，棒 12未能向上趋势它。这使得棒 12 成为一条很棒的做空信号棒，因为在棒 11 及早入场的多头被套，会在空头趋势棒棒 12 下方离场。它也是一个突破回撤做空架构。棒 13 是突破回撤做空入场。</p>
+<p><img alt="b28efc5db214ecbd6279a13cbd3b514bd6b7ed12773a6ba7c577388eb1a8d641.jpg" src="../../images/b28efc5db214ecbd6279a13cbd3b514bd6b7ed12773a6ba7c577388eb1a8d641.jpg" /></p>
+<p>P223</p>
+<p>如图 21.4 所示，原油的 5 分钟图形成一个楔形顶，然后一个更低高点。棒 1 是突破早期交易区间后的一个高点 1 突破回撤。它是一个双棒反转，是强双棒多头尖峰之后的第一次回撤。那个强双棒多头尖峰突破了一段交易区间，令市场翻转为总在场内多头。</p>
+<p>虽然形成了带刺铁丝形态和第二波买进高潮，但是棒 3 是多头趋势棒上方一个不错的高点2做多架构，因为棒2所在顶部还没有强到表明空头正在控制市场。</p>
+<p>棒 5 是一个楔形面，是棒 2 多头尖峰之后的通道的顶部。棒 2 之后，双向交易以突出的尾线、重叠的棒线、回撤和空头实体继续，所以测试通道低点棒3的几率很高。</p>
+<p>截止棒 6 的下跌突破了趋势线，略微跌破了多头趋势的更高低点棒 3，表明强势空头出现。</p>
+<p>棒 7 是对棒 5 信号棒低点的两条腿突破测试，是向下突破多头趋势线后的一个更低高点，所以可能是一个重要趋势反转，是一个双棒反转做空架构，是对向上刺穿均线的极力抗拒，也是一个楔形空头旗形。楔形空头旗形更低高点中的第一次上推，是棒 6 前面倒数第四棒那条小型多头棒，第二次上推是棒 6 后一棒。</p>
+<p>图21.5 1分钟图上的刮头皮</p>
+<p><img alt="5be873baaef433a264e368d8a7e10a9a7457ed8a28a346e52b79d0952d34a76d.jpg" src="../../images/5be873baaef433a264e368d8a7e10a9a7457ed8a28a346e52b79d0952d34a76d.jpg" /></p>
+<p>图 21.5 是一张 1 分钟图，显示出头 90 分钟内的一些价格行为刮头皮。下一张图是这一时间段价格行为的特写。对于大部分交易者来说，足够快速地正确捕捉这些交易中的大部分基本上是不可能的，但是这张图表说明价格行为分析在 1 分钟这样短的时间框架上也是有效的。</p>
+<p>P224</p>
+<p><img alt="ec77196aa8d0a871b69e9d1e9038a4ebe77253b2b026b598a1ed86f84da9ae49.jpg" src="../../images/ec77196aa8d0a871b69e9d1e9038a4ebe77253b2b026b598a1ed86f84da9ae49.jpg" /></p>
+<p>图 21.6 是 1 分钟电子迷你开盘 90 分钟的特写，突出显示了价格行为刮头皮架构。棒线编号与前一张图相同。</p>
+<p>棒 1 是一个高点 2 做多（有两次下推）。</p>
+<p>棒 2 是一个楔形做空和一个最终旗形。</p>
+<p>棒 3 是空头尖峰之后的一个突破回撤做空和一个低点 1。</p>
+<p>棒 4 是一个突破测试做空、一个更低高点、以及一个低点 2，其中棒 3 是低点 1。</p>
+<p>棒 5 是一个更低高点和一个低点 2 做空，位于均线下方。</p>
+<p>棒 6 是一个楔形做多、一个双棒反转、以及一个扩张三角形底。</p>
+<p>棒 7 是一个失败的趋势线突破做空，并与棒 5 形成一个双重顶空头旗形。</p>
+<p>棒 8 是一个两条腿更低低点，形成于棒 7 突破趋势线之后，是交易区间日中的一个更低低点。</p>
+<p>棒10是一个楔形反转二次入场和一个更高低点。这个更高低点可能意味着多头趋势正在形成。</p>
+<p>棒 11 是趋势线突破后的第一次回撤。它是一个高点 2 做多，高点 1 在两棒之前。</p>
+<p>棒 12 是又一个多头高点 2。</p>
+<p>棒 13 是一个楔形做空、一个最终旗形、一个可能的双重顶空头旗形（与棒 4 构成）。</p>
+<p>棒14是一个失败的多头趋势线突破、对交易区间的一次失败的向下突破、一个双重底多头旗形、以及第二条上涨腿的可能的起点。</p>
+<p>棒 15 是一个高点 2。一棒之前出现过一个多头旗形突破回撤入场。</p>
+<p>棒 16 是多头趋势中的一个高点 2。</p>
+<p>棒 17 是一个楔形，是对当日高点的失败的测试（一个双重顶），所以可能是一个更低高点。</p>
+<p>棒 19 是均线处的一个空头低点 2、一个楔形空头旗形、一个五跳动失败（对于在棒 18买进的交易者们来说）、也是空头尖峰令市场翻转为总在场内空头后的第一次回撤。</p>
+<p>棒 20 是趋势型交易区间日内向当日新低的两推（棒 18 是第一次）。尽管从高点棒 17 出现了一条强空头腿，但此时还不是一个空头日。它也是当日单跳动新低之后的向上反转（单跳动失败突破和双重底）。它也是一个双棒最终旗形突破后的一个楔形和双棒向上反转。</p>
+<p>棒 21 是第二条上涨腿、一个楔形空头旗形（棒 20 前面的 ii 形成是第一次上推）、以及一个可能的双重顶空头旗形（与棒 19 形成）。</p>
+<p>棒 22 是趋势线（棒 17 到棒 19 的趋势线）突破后向着一个更高低点的两条腿回撤，一个</p>
+<p>双重底（棒10和棒20）回撤做多。</p>
+<p>棒23是一个失败的趋势线突破和一个双重底（棒23比棒22高1个跳动）多头旗形。</p>
+<p>P225</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  回到页面顶部
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.expand", "navigation.top", "navigation.indexes", "search.highlight", "search.suggest", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>

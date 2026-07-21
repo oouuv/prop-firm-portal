@@ -1,0 +1,1610 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第21章：尖峰和通道趋势 — Al Brooks 价格行为交易</title>
+<style>
+/* ===== Design Variables ===== */
+:root {
+  --bg-primary: #0d1117;
+  --bg-secondary: #161b22;
+  --bg-card: #161b22;
+  --bg-card-hover: #1c2128;
+  --text-primary: #e6edf3;
+  --text-secondary: #8b949e;
+  --text-muted: #6e7681;
+  --accent-blue: #58a6ff;
+  --accent-orange: #f0883e;
+  --accent-red: #f85149;
+  --accent-green: #3fb950;
+  --accent-purple: #bc8cff;
+  --accent-yellow: #d29922;
+  --accent-cyan: #39d2c0;
+  --border-color: #30363d;
+  --border-radius: 12px;
+  --card-radius: 8px;
+  --header-height: 56px;
+  --max-width: 1200px;
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans SC', system-ui, sans-serif;
+  --font-mono: 'SF Mono', 'Fira Code', 'Fira Mono', monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; scroll-padding-top: calc(var(--header-height) + 20px); }
+body {
+  font-family: var(--font-sans);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.7;
+  font-size: 16px;
+}
+
+/* ===== Header ===== */
+.header {
+  position: fixed; top: 0; left: 0; right: 0;
+  height: var(--header-height);
+  background: rgba(13,17,23,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border-color);
+  z-index: 100;
+  display: flex; align-items: center;
+}
+.header-inner {
+  max-width: var(--max-width); margin: 0 auto; padding: 0 24px;
+  display: flex; align-items: center; gap: 16px; width: 100%;
+}
+.header-logo {
+  font-size: 15px; font-weight: 700; color: var(--accent-blue);
+  white-space: nowrap; text-decoration: none;
+}
+.header-logo span { color: var(--text-primary); }
+.header-nav {
+  display: flex; gap: 4px; overflow-x: auto;
+  scrollbar-width: none; padding: 4px 0;
+}
+.header-nav::-webkit-scrollbar { display: none; }
+.header-nav a {
+  color: var(--text-secondary); text-decoration: none;
+  font-size: 13px; padding: 4px 12px; border-radius: 20px;
+  white-space: nowrap; transition: all 0.2s;
+}
+.header-nav a:hover, .header-nav a.active {
+  color: var(--text-primary); background: rgba(88,166,255,0.12);
+}
+
+/* ===== Hero ===== */
+.hero {
+  margin-top: var(--header-height);
+  padding: 80px 24px 60px; text-align: center;
+  background: linear-gradient(180deg, rgba(88,166,255,0.06) 0%, transparent 100%);
+  border-bottom: 1px solid var(--border-color);
+}
+.hero h1 { font-size: 2.4rem; font-weight: 800; margin-bottom: 12px; }
+.hero h1 .ch-num { color: var(--accent-blue); }
+.hero .subtitle { color: var(--text-secondary); font-size: 1.1rem; margin-bottom: 32px; }
+.hero-stats {
+  display: flex; justify-content: center; gap: 32px; flex-wrap: wrap;
+}
+.hero-stat { text-align: center; }
+.hero-stat .num { font-size: 2rem; font-weight: 700; color: var(--accent-blue); }
+.hero-stat .label { font-size: 0.85rem; color: var(--text-muted); }
+
+/* ===== Container ===== */
+.container {
+  max-width: var(--max-width); margin: 0 auto; padding: 40px 24px;
+}
+
+/* ===== Stage (Section) ===== */
+.stage { margin-bottom: 64px; }
+.stage-header { margin-bottom: 24px; }
+.stage-num {
+  display: inline-block; font-size: 12px; font-weight: 600;
+  color: var(--accent-blue); background: rgba(88,166,255,0.1);
+  padding: 3px 10px; border-radius: 12px; margin-bottom: 8px;
+}
+.stage-title { font-size: 1.6rem; font-weight: 700; }
+.stage-desc { color: var(--text-secondary); margin-top: 8px; font-size: 0.95rem; }
+
+/* ===== Card Grid ===== */
+.card-grid {
+  display: grid; grid-template-columns: 1fr; gap: 16px;
+}
+@media (min-width: 700px) { .card-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1000px) { .card-grid.cols-3 { grid-template-columns: repeat(3, 1fr); } }
+
+/* ===== Card ===== */
+.card {
+  background: var(--bg-card); border: 1px solid var(--border-color);
+  border-radius: var(--card-radius); padding: 20px;
+  transition: border-color 0.2s, background 0.2s;
+}
+.card:hover { border-color: #484f58; background: var(--bg-card-hover); }
+.card.fullwidth { grid-column: 1 / -1; }
+.card.key-concept { border-left: 4px solid var(--accent-blue); }
+.card.key-concept.orange { border-left-color: var(--accent-orange); }
+.card.key-concept.red { border-left-color: var(--accent-red); }
+.card.key-concept.green { border-left-color: var(--accent-green); }
+.card.key-concept.purple { border-left-color: var(--accent-purple); }
+.card.key-concept.yellow { border-left-color: var(--accent-yellow); }
+.card.key-concept.cyan { border-left-color: var(--accent-cyan); }
+
+/* Card Tags */
+.card-tag {
+  display: inline-block; font-size: 11px; font-weight: 600;
+  padding: 2px 8px; border-radius: 10px; margin-bottom: 10px;
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+.card-tag.concept { color: var(--accent-blue); background: rgba(88,166,255,0.12); }
+.card-tag.example { color: var(--accent-orange); background: rgba(240,136,62,0.12); }
+.card-tag.summary { color: var(--accent-purple); background: rgba(188,140,255,0.12); }
+.card-tag.case { color: var(--accent-green); background: rgba(63,185,80,0.12); }
+.card-tag.warning { color: var(--accent-red); background: rgba(248,81,73,0.12); }
+.card-tag.rule { color: var(--accent-cyan); background: rgba(57,210,192,0.12); }
+.card-tag.quiz { color: var(--accent-yellow); background: rgba(210,153,34,0.12); }
+
+/* Card Title & Text */
+.card-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+.card-text { color: var(--text-secondary); font-size: 0.95rem; line-height: 1.7; }
+.card-text + .card-text { margin-top: 8px; }
+.card-list { list-style: none; margin-top: 10px; }
+.card-list li {
+  position: relative; padding-left: 18px; margin-bottom: 6px;
+  color: var(--text-secondary); font-size: 0.93rem; line-height: 1.6;
+}
+.card-list li::before {
+  content: ''; position: absolute; left: 0; top: 10px;
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--accent-blue);
+}
+
+/* Card Figure */
+.card-figure { margin-top: 16px; }
+.card-figure img {
+  width: 100%; border-radius: 6px; cursor: pointer;
+  border: 1px solid var(--border-color); transition: transform 0.2s;
+}
+.card-figure img:hover { transform: scale(1.01); }
+.card-figure figcaption {
+  font-size: 0.82rem; color: var(--text-muted); margin-top: 8px;
+  text-align: center; font-style: italic;
+}
+
+/* ===== Expandable Card ===== */
+.expandable { cursor: pointer; user-select: none; }
+.expandable .card-header {
+  display: flex; align-items: center; justify-content: space-between;
+}
+.expandable .card-header::after {
+  content: ''; width: 0; height: 0;
+  border-left: 5px solid transparent; border-right: 5px solid transparent;
+  border-top: 6px solid var(--text-muted); transition: transform 0.3s;
+}
+.expandable.open .card-header::after { transform: rotate(180deg); }
+.expandable .card-body {
+  max-height: 0; overflow: hidden; transition: max-height 0.4s ease;
+}
+.expandable.open .card-body { max-height: 2000px; }
+.expandable .card-body-inner { padding-top: 12px; }
+
+/* ===== Glossary Tooltip ===== */
+.glossary {
+  position: relative; display: inline;
+  border-bottom: 1px dashed var(--accent-blue); cursor: help;
+  color: var(--accent-blue); font-weight: 500;
+}
+.glossary .tooltip {
+  display: none; position: absolute; bottom: calc(100% + 8px);
+  left: 50%; transform: translateX(-50%);
+  background: #1c2128; border: 1px solid var(--border-color);
+  border-radius: 8px; padding: 12px 16px; width: 300px;
+  font-size: 0.85rem; color: var(--text-secondary);
+  line-height: 1.5; z-index: 50; box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  font-weight: 400; pointer-events: none;
+}
+.glossary:hover .tooltip { display: block; }
+
+/* ===== Original Quote (gold quote block) ===== */
+.original-quote {
+  margin: 16px 0; padding: 16px 20px;
+  border-left: 4px solid var(--accent-blue);
+  background: rgba(88,166,255,0.06);
+  border-radius: 0 8px 8px 0;
+}
+.original-quote p {
+  color: var(--text-primary); font-size: 15px; line-height: 1.8;
+  font-style: italic; margin: 0;
+}
+.original-quote cite {
+  display: block; margin-top: 8px; font-size: 12px;
+  color: var(--text-muted); font-style: normal;
+}
+
+/* ===== Inline Quote ===== */
+.inline-quote {
+  margin: 12px 0; padding: 10px 16px;
+  border-left: 3px solid var(--accent-cyan);
+  background: rgba(57,210,192,0.05);
+  border-radius: 0 6px 6px 0;
+  font-size: 14px; color: var(--accent-cyan);
+  font-style: italic; line-height: 1.7;
+}
+
+/* ===== Trading Rule Card ===== */
+.rule-card {
+  background: var(--bg-card); border: 1px solid var(--border-color);
+  border-radius: var(--card-radius); padding: 16px 20px;
+  border-left: 4px solid var(--accent-cyan);
+}
+.rule-condition {
+  font-size: 0.85rem; color: var(--accent-cyan); font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;
+}
+.rule-action { font-size: 0.95rem; color: var(--text-primary); margin-bottom: 4px; }
+.rule-example { font-size: 0.88rem; color: var(--text-muted); font-style: italic; }
+
+/* ===== Highlight Box ===== */
+.highlight-box {
+  margin-top: 12px; padding: 12px 16px;
+  background: rgba(88,166,255,0.06);
+  border: 1px solid rgba(88,166,255,0.15);
+  border-radius: 8px;
+}
+.hl-title {
+  font-size: 0.85rem; font-weight: 600; color: var(--accent-blue);
+  margin-bottom: 6px;
+}
+
+/* ===== Four-in-One ===== */
+.four-in-one {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 16px; margin: 16px 0;
+}
+.fio-item {
+  text-align: center; padding: 20px 12px;
+  background: var(--bg-card); border: 1px solid var(--border-color);
+  border-radius: var(--card-radius); transition: transform 0.2s, border-color 0.2s;
+}
+.fio-item:hover { transform: translateY(-2px); border-color: var(--accent-blue); }
+.fio-icon { font-size: 2rem; margin-bottom: 8px; }
+.fio-label { font-size: 0.95rem; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; }
+.fio-desc { font-size: 0.82rem; color: var(--text-muted); }
+
+/* ===== Comparison Table ===== */
+.comparison-table {
+  width: 100%; border-collapse: collapse; margin: 16px 0;
+  font-size: 0.9rem;
+}
+.comparison-table th {
+  background: rgba(88,166,255,0.08); color: var(--accent-blue);
+  padding: 10px 14px; text-align: left; font-weight: 600;
+  border-bottom: 2px solid var(--border-color);
+}
+.comparison-table td {
+  padding: 10px 14px; border-bottom: 1px solid var(--border-color);
+  color: var(--text-secondary);
+}
+.comparison-table tr:hover td { background: rgba(88,166,255,0.04); }
+
+/* ===== Quiz ===== */
+.quiz-card {
+  background: var(--bg-card); border: 1px solid var(--border-color);
+  border-radius: var(--card-radius); padding: 24px;
+}
+.quiz-question { font-size: 1.05rem; font-weight: 600; margin-bottom: 16px; line-height: 1.5; }
+.quiz-options { display: flex; flex-direction: column; gap: 8px; }
+.quiz-option {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 16px; border: 1px solid var(--border-color);
+  border-radius: 8px; cursor: pointer; transition: all 0.2s;
+  font-size: 0.93rem; color: var(--text-secondary);
+}
+.quiz-option:hover { border-color: var(--accent-blue); background: rgba(88,166,255,0.06); }
+.quiz-option.selected { border-color: var(--accent-blue); background: rgba(88,166,255,0.1); color: var(--text-primary); }
+.quiz-option.correct { border-color: var(--accent-green); background: rgba(63,185,80,0.1); color: var(--accent-green); }
+.quiz-option.wrong { border-color: var(--accent-red); background: rgba(248,81,73,0.1); color: var(--accent-red); }
+.quiz-option .radio {
+  width: 18px; height: 18px; border-radius: 50%;
+  border: 2px solid var(--border-color); flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+}
+.quiz-option.selected .radio { border-color: var(--accent-blue); }
+.quiz-option.correct .radio { border-color: var(--accent-green); background: var(--accent-green); }
+.quiz-option.wrong .radio { border-color: var(--accent-red); background: var(--accent-red); }
+.quiz-option.selected .radio::after,
+.quiz-option.correct .radio::after,
+.quiz-option.wrong .radio::after {
+  content: ''; width: 8px; height: 8px; border-radius: 50%; background: white;
+}
+.quiz-explanation {
+  margin-top: 12px; padding: 12px 16px; border-radius: 8px;
+  font-size: 0.9rem; line-height: 1.6; display: none;
+}
+.quiz-explanation.show { display: block; }
+.quiz-explanation.correct-bg { background: rgba(63,185,80,0.1); color: var(--accent-green); border: 1px solid rgba(63,185,80,0.2); }
+.quiz-explanation.wrong-bg { background: rgba(248,81,73,0.1); color: var(--accent-red); border: 1px solid rgba(248,81,73,0.2); }
+
+/* ===== Calculator ===== */
+.calculator {
+  background: var(--bg-card); border: 1px solid var(--border-color);
+  border-radius: var(--card-radius); padding: 24px;
+}
+.calc-row { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; align-items: end; }
+.calc-field { flex: 1; min-width: 140px; }
+.calc-field label { display: block; font-size: 0.82rem; color: var(--text-muted); margin-bottom: 4px; }
+.calc-field input {
+  width: 100%; padding: 10px 12px; border: 1px solid var(--border-color);
+  border-radius: 6px; background: var(--bg-primary); color: var(--text-primary);
+  font-size: 0.95rem; font-family: var(--font-mono);
+}
+.calc-field input:focus { outline: none; border-color: var(--accent-blue); }
+.calc-btn {
+  padding: 10px 24px; border: none; border-radius: 6px;
+  background: var(--accent-blue); color: white; font-weight: 600;
+  font-size: 0.9rem; cursor: pointer; transition: opacity 0.2s;
+}
+.calc-btn:hover { opacity: 0.85; }
+.calc-results {
+  margin-top: 16px; padding: 16px; border-radius: 8px;
+  background: rgba(88,166,255,0.06); border: 1px solid rgba(88,166,255,0.15);
+}
+.calc-result-row {
+  display: flex; justify-content: space-between; padding: 6px 0;
+  border-bottom: 1px solid rgba(88,166,255,0.08);
+  font-size: 0.9rem;
+}
+.calc-result-row:last-child { border-bottom: none; }
+.calc-result-label { color: var(--text-secondary); }
+.calc-result-value { color: var(--accent-blue); font-weight: 600; font-family: var(--font-mono); }
+
+/* ===== Progress ===== */
+.progress-bar-container {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  height: 4px; background: var(--bg-secondary); z-index: 100;
+}
+.progress-bar-fill {
+  height: 100%; background: var(--accent-blue);
+  width: 0%; transition: width 0.1s;
+}
+
+/* ===== Lightbox ===== */
+#lightbox {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.88); z-index: 200;
+  justify-content: center; align-items: center; cursor: zoom-out;
+}
+#lightbox.active { display: flex; }
+#lightbox img {
+  max-width: 92vw; max-height: 92vh; border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+}
+
+/* ===== Quiz Score ===== */
+.quiz-score {
+  text-align: center; padding: 32px;
+  background: var(--bg-card); border: 1px solid var(--border-color);
+  border-radius: var(--card-radius);
+}
+.quiz-score .score-num { font-size: 3rem; font-weight: 800; color: var(--accent-blue); }
+.quiz-score .score-label { font-size: 1rem; color: var(--text-secondary); margin-top: 8px; }
+.quiz-reset-btn {
+  margin-top: 16px; padding: 10px 24px; border: none; border-radius: 6px;
+  background: var(--accent-blue); color: white; font-weight: 600;
+  font-size: 0.9rem; cursor: pointer;
+}
+.quiz-reset-btn:hover { opacity: 0.85; }
+.quiz-progress { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px; text-align: right; }
+
+/* ===== Responsive ===== */
+@media (max-width: 700px) {
+  .hero h1 { font-size: 1.6rem; }
+  .hero-stats { gap: 16px; }
+  .container { padding: 24px 16px; }
+  .stage-title { font-size: 1.3rem; }
+  .four-in-one { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== Header ===== -->
+<nav class="header">
+  <div class="header-inner">
+    <a class="header-logo">Al Brooks Ch.21</a>
+    <div class="header-nav">
+      <a href="#sec1">核心定义</a>
+      <a href="#sec2">尖峰本质</a>
+      <a href="#sec3">通道交易</a>
+      <a href="#sec4">形态变种</a>
+      <a href="#sec5">测量运动</a>
+      <a href="#sec6">总结自测</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ===== Hero ===== -->
+<section class="hero">
+  <h1><span class="ch-num">第 21 章</span>：尖峰和通道趋势</h1>
+  <p class="subtitle">Al Brooks · Trading Price Action: Trends</p>
+  <div class="hero-stats">
+    <div class="hero-stat"><div class="num">6</div><div class="label">教学模块</div></div>
+    <div class="hero-stat"><div class="num">10</div><div class="label">图表实例</div></div>
+    <div class="hero-stat"><div class="num">12</div><div class="label">交易规则</div></div>
+  </div>
+</section>
+
+<!-- ===== Main Content ===== -->
+<div class="container">
+
+<!-- ============================================================ -->
+<!-- 模块一：核心定义 -->
+<!-- ============================================================ -->
+<section class="stage" id="sec1">
+  <div class="stage-header">
+    <span class="stage-num">模块一</span>
+    <h2 class="stage-title">尖峰和通道的核心定义</h2>
+    <p class="stage-desc">理解尖峰和通道趋势的八个核心特征——这是所有趋势中最常见的一种形态</p>
+  </div>
+  <div class="card-grid">
+
+    <!-- 原文金句：尖峰和通道趋势 -->
+    <div class="card key-concept fullwidth">
+      <span class="card-tag concept">原文金句</span>
+      <div class="card-title">尖峰和通道趋势是最常见的一类趋势</div>
+      <blockquote class="original-quote">
+        <p>「尖峰和通道趋势是最常见的一类趋势，它几乎存在于每天和每轮趋势中。它有数不尽的变种，而且常常是较小的尖峰和通道趋势嵌套在较大的尖峰和通道趋势中。因为它常常是如此多价格行为的控制力量，所以交易者非常有必要了解它。」</p>
+        <cite>— Al Brooks, 第21章 第326页</cite>
+      </blockquote>
+      <div class="highlight-box">
+        <div class="hl-title">深度解读</div>
+        <p class="card-text">这句话是整章的基石。尖峰和通道不是一个罕见的特殊形态，而是<strong>最普遍</strong>的趋势结构。每轮趋势都可以拆分为一个尖峰期和一个通道期。理解这一点，意味着你在每张图表上都能识别出它，从而选择正确的交易策略。</p>
+      </div>
+    </div>
+
+    <!-- 可展开卡片 1 -->
+    <div class="card key-concept expandable" onclick="toggleExpand(this)">
+      <div class="card-header">
+        <span class="card-tag concept">核心概念</span>
+      </div>
+      <div class="card-title">1. 尖峰 = 突破 = 缺口 = 高潮</div>
+      <div class="card-body">
+        <div class="card-body-inner">
+          <div class="four-in-one">
+            <div class="fio-item">
+              <div class="fio-icon">⚡</div>
+              <div class="fio-label">尖峰</div>
+              <div class="fio-desc">Spike — 一组强劲K线的快速运动</div>
+            </div>
+            <div class="fio-item">
+              <div class="fio-icon">🚀</div>
+              <div class="fio-label">突破</div>
+              <div class="fio-desc">Breakout — 价格突破重要高低点</div>
+            </div>
+            <div class="fio-item">
+              <div class="fio-icon">🔲</div>
+              <div class="fio-label">缺口</div>
+              <div class="fio-desc">Gap — 价格快速穿越的清淡区</div>
+            </div>
+            <div class="fio-item">
+              <div class="fio-icon">🔥</div>
+              <div class="fio-label">高潮</div>
+              <div class="fio-desc">Climax — 极端价格运动</div>
+            </div>
+          </div>
+          <p class="card-text">这四个概念在 Al Brooks 体系中是<strong>等价的</strong>。当市场出现一组强劲的趋势棒时，它同时是尖峰、突破、缺口和高潮。理解这一点至关重要——你在图表上看到的任何一种形态，都可以用其他三种方式来理解。</p>
+          <blockquote class="inline-quote">
+            「应该认为尖峰，高潮和突破是相同的。」
+          </blockquote>
+          <div class="highlight-box">
+            <div class="hl-title">关键理解</div>
+            <p class="card-text">尖峰本质上是一个<span class="glossary">逃逸缺口<span class="tooltip">Runaway Gap — 趋势中途出现的缺口，表示趋势加速，通常不会被快速回补</span></span>，市场迅速从一个价位运动至另一个价位。所有尖峰都是缺口——这是后续测量运动的基础。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 可展开卡片 2 -->
+    <div class="card key-concept expandable" onclick="toggleExpand(this)">
+      <div class="card-header">
+        <span class="card-tag concept">核心概念</span>
+      </div>
+      <div class="card-title">2. 尖峰通常在第一个小时内形成</div>
+      <div class="card-body">
+        <div class="card-body-inner">
+          <p class="card-text">尖峰通常在第一个小时内形成，而且常常是在当天一开始的几棒内。突破越强，就越可能出现通道形式的坚持到底，通道就可能行进得越远。</p>
+          <blockquote class="inline-quote">
+            「当突破很强时，它常常会成为一波测量运动的基础，而通道则可能在测量运动处结束。」
+          </blockquote>
+          <div class="highlight-box">
+            <div class="hl-title">实战要点</div>
+            <p class="card-text">开盘头几棒的强劲运动往往是全天趋势的起点。如果你错过了尖峰，不要追高——等通道回调再入场。尖峰的强度决定了通道能走多远。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 可展开卡片 3 -->
+    <div class="card key-concept expandable" onclick="toggleExpand(this)">
+      <div class="card-header">
+        <span class="card-tag concept">核心概念</span>
+      </div>
+      <div class="card-title">3. 通道 = 倾斜的交易区间</div>
+      <div class="card-body">
+        <div class="card-body-inner">
+          <p class="card-text">尖峰之后是回撤，回撤之后趋势以通道形式恢复。通道内有一种忧虑和不确定的感觉——这就是所谓的"<span class="glossary">忧虑墙<span class="tooltip">Wall of Worry — 趋势在双向交易中持续延伸，看起来随时都会结束，但就是不结束</span></span>"。</p>
+          <blockquote class="inline-quote">
+            「通道内几乎没有紧迫感，更多的是忧虑和不确定。这便是你有时从电视专家口中听到的'忧虑墙'。每个人都看到双向交易在发生，趋势看起来随时都会结束，但是它却一直在延伸。」
+          </blockquote>
+          <ul class="card-list">
+            <li>通道是倾斜的交易区间，拥有大量重叠棒线</li>
+            <li>交易者们迅速获利了结，但当趋势继续时不断重复入场</li>
+            <li>通道可以持续的时间比你想象的要长得多</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- 可展开卡片 4 -->
+    <div class="card key-concept expandable" onclick="toggleExpand(this)">
+      <div class="card-header">
+        <span class="card-tag concept">核心概念</span>
+      </div>
+      <div class="card-title">4. 通道内的交易策略</div>
+      <div class="card-body">
+        <div class="card-body-inner">
+          <p class="card-text">在通道内，最好像<span class="glossary">交易区间<span class="tooltip">Trading Range — 价格在水平边界内波动，多空力量均衡</span></span>一样交易：顺势方向入场，逆势方向做刮头皮。</p>
+          <blockquote class="inline-quote">
+            「当市场在通道内行进时，最好像趋势型交易区间一样交易——在多头通道内，最好在前一棒的低点下方买进，部分持有，等待波段。」
+          </blockquote>
+          <div class="rule-card">
+            <div class="rule-condition">条件：多头通道内</div>
+            <div class="rule-action">应该做：<strong>在前一棒低点下方使用限价单买进</strong></div>
+            <div class="rule-example">例：每下跌10美分时入场，部分持有等待波段利润</div>
+          </div>
+          <div class="rule-card" style="margin-top:8px">
+            <div class="rule-condition">条件：多头通道内做空</div>
+            <div class="rule-action">应该做：<strong>在波段高点或前一棒高点上方卖出，主要做刮头皮</strong></div>
+            <div class="rule-example">例：在通道上轨附近做空，快速获利了结</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 可展开卡片 5 -->
+    <div class="card key-concept expandable" onclick="toggleExpand(this)">
+      <div class="card-header">
+        <span class="card-tag concept">核心概念</span>
+      </div>
+      <div class="card-title">5. 通道极少顺势突破</div>
+      <div class="card-body">
+        <div class="card-body-inner">
+          <blockquote class="inline-quote">
+            「通道极少会顺势突破，但是，当顺势突破出现时，突破通常会在五棒内失败，然后市场反转。」
+          </blockquote>
+          <p class="card-text">这是 Al Brooks 体系中最重要的规则之一。通道是反向旗形——多头通道是空头旗形，空头通道是多头旗形。不要在通道突破时追入。</p>
+          <div class="highlight-box" style="border-color: rgba(248,81,73,0.3); background: rgba(248,81,73,0.06);">
+            <div class="hl-title" style="color: var(--accent-red);">实战警告</div>
+            <p class="card-text">在通道内做逆势交易是失败的策略。通道的紧凑性使得逆势刮头皮利润不足以覆盖风险。把逆势交易的失败当作顺势架构——在逆势交易者止损被击中的价位用止损单入场。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 可展开卡片 6 -->
+    <div class="card key-concept expandable" onclick="toggleExpand(this)">
+      <div class="card-header">
+        <span class="card-tag concept">核心概念</span>
+      </div>
+      <div class="card-title">6. 通道在测量运动目标处结束</div>
+      <div class="card-body">
+        <div class="card-body-inner">
+          <p class="card-text">通道通常在某个测量运动目标处结束，而且常常是在第三推结束。当通道到达测量运动目标时，要注意是否有反转正在形成。</p>
+          <blockquote class="inline-quote">
+            「把测量运动目标作为获利了结区，要比作为反转交易入场区好得多。」
+          </blockquote>
+          <div class="highlight-box">
+            <div class="hl-title">关键理解</div>
+            <p class="card-text">测量运动目标是获利了结的好地方，但不是好的反转入场点。经验丰富的交易者会在测量运动目标处做逆势刮头皮，但大多数人做这个会赔钱。反转交易需要非常强的架构。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 可展开卡片 7 -->
+    <div class="card key-concept expandable" onclick="toggleExpand(this)">
+      <div class="card-header">
+        <span class="card-tag concept">核心概念</span>
+      </div>
+      <div class="card-title">7. 逆势突破后等待回撤入场</div>
+      <div class="card-body">
+        <div class="card-body-inner">
+          <p class="card-text">如果通道逆势突破，通常最终是逆势突破。不要在突破时入场，而是等待回撤。</p>
+          <div class="rule-card">
+            <div class="rule-condition">条件：多头通道被向下突破</div>
+            <div class="rule-action">应该做：<strong>等待反弹至更低高点或更高高点，寻找空头架构做空</strong></div>
+            <div class="rule-example">例：通道向下突破后，等反弹至前波段高点附近做空</div>
+          </div>
+          <p class="card-text" style="margin-top:8px">市场通常会回调至通道起点，形成一个对缺口的测试（所有尖峰都是缺口）。回撤后尝试形成交易区间时，至少会在趋势方向上回撤25%。</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 可展开卡片 8 -->
+    <div class="card key-concept expandable" onclick="toggleExpand(this)">
+      <div class="card-header">
+        <span class="card-tag concept">核心概念</span>
+      </div>
+      <div class="card-title">8. 50%概率理论</div>
+      <div class="card-body">
+        <div class="card-body-inner">
+          <p class="card-text">强尖峰是市场向新价位快速运动的征兆。当市场越过新价位后回撤成为交易区间时，多空双方都对新区域内的价格感到满意。</p>
+          <blockquote class="inline-quote">
+            「在交易区间中部，等距离运动的方向概率大约是50%。也就是说市场下跌X点和上涨X点的几率大致相同。这种不确定性是交易区间的标志。」
+          </blockquote>
+          <div class="highlight-box">
+            <div class="hl-title">关键理解</div>
+            <p class="card-text">趋势只是从一个交易区间向另一个交易区间的运动。在新的交易区间内，多空双方都在下单，试图在他们所认为的下一个突破方向上建仓。一旦方向概率回到50%，交易区间就会变得非常明显。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 模块二：尖峰的本质 — 突破与缺口 -->
+<!-- ============================================================ -->
+<section class="stage" id="sec2">
+  <div class="stage-header">
+    <span class="stage-num">模块二</span>
+    <h2 class="stage-title">尖峰的本质 — 突破与缺口</h2>
+    <p class="stage-desc">尖峰是所有趋势的起点，理解尖峰的形成机制和累积效应</p>
+  </div>
+  <div class="card-grid">
+
+    <!-- 原文金句：尖峰的本质 -->
+    <div class="card key-concept fullwidth">
+      <span class="card-tag concept">原文金句</span>
+      <div class="card-title">尖峰是趋势的起点</div>
+      <blockquote class="original-quote">
+        <p>「几乎所有趋势都是以尖峰开始的，既便只是单条趋势棒，直到很多棒之后才可确认为趋势的起点。因此，几乎所有趋势都是尖峰和通道趋势的变种。」</p>
+        <cite>— Al Brooks, 第21章 第327页</cite>
+      </blockquote>
+      <div class="highlight-box">
+        <div class="hl-title">深度解读</div>
+        <p class="card-text">尖峰不需要很大。即使只有一条趋势棒，它也是尖峰。关键是在尖峰结束后，市场如何反应——是恢复趋势、进入交易区间、还是反转。这三种可能性中，第一种（趋势恢复）最常见。</p>
+      </div>
+    </div>
+
+    <!-- 尖峰的三种后续 -->
+    <div class="card key-concept fullwidth">
+      <span class="card-tag concept">核心概念</span>
+      <div class="card-title">尖峰结束后的三种可能</div>
+      <p class="card-text">当第一条暂停棒或回撤棒出现时，尖峰便立即结束。接下来市场做三种事情中的任意一种：</p>
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:12px; margin-top:12px;">
+        <div class="rule-card" style="border-left-color: var(--accent-green);">
+          <div class="rule-condition" style="color: var(--accent-green);">可能性1（最常见）</div>
+          <div class="rule-action"><strong>趋势恢复</strong></div>
+          <div class="rule-example">回撤几棒到十几棒，然后趋势恢复为通道</div>
+        </div>
+        <div class="rule-card">
+          <div class="rule-condition">可能性2</div>
+          <div class="rule-action"><strong>进入交易区间</strong></div>
+          <div class="rule-example">回撤超过10棒，可能向任意方向突破，但偏向原趋势方向</div>
+        </div>
+        <div class="rule-card" style="border-left-color: var(--accent-red);">
+          <div class="rule-condition" style="color: var(--accent-red);">可能性3（最少见）</div>
+          <div class="rule-action"><strong>趋势反转</strong></div>
+          <div class="rule-example">回撤很强，总在场内状态向反方向反转</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 尖峰的持续时间 -->
+    <div class="card">
+      <span class="card-tag concept">核心概念</span>
+      <div class="card-title">尖峰的持续时间</div>
+      <p class="card-text">尖峰可能小到只有一条中等长度的趋势棒，也可能会持续10棒或更长。尖峰在第一个暂停或回撤处结束。</p>
+      <ul class="card-list">
+        <li>如果尖峰在一两棒内结束，它或者成为二次尖峰，或者成为较大时间框架上的一个尖峰</li>
+        <li>给定时间框架上的尖峰是较小时间框架上一条陡峭而紧凑的通道</li>
+        <li>同理，陡峭而紧凑的通道是较高时间框架上的尖峰</li>
+      </ul>
+    </div>
+
+    <!-- 尖峰的累积效应 -->
+    <div class="card">
+      <span class="card-tag concept">核心概念</span>
+      <div class="card-title">尖峰的累积效应</div>
+      <p class="card-text">多个连续尖峰会产生累积效应，表明市场正在转变。当出现多个逆势尖峰时，市场的双向交易在增加。</p>
+      <blockquote class="inline-quote">
+        「虽然最后一个尖峰向下突破那个楔形而且明显引出了那条空头腿，但并不意味着是它自己令市场反转的。先前的那些尖峰也是这种转变过程的一部分，不应忽视。」
+      </blockquote>
+      <div class="highlight-box">
+        <div class="hl-title">实战要点</div>
+        <p class="card-text">当市场在趋势中形成反向尖峰时，第一个尖峰几乎总是引出旗形。但如果接下来10-20棒内又形成一个或两个尖峰，那些逆势力量就在累积——市场正在转变。你应该开始在两个方向寻找交易机会。</p>
+      </div>
+    </div>
+
+    <!-- 图表实例：图21.1 -->
+    <div class="card fullwidth">
+      <span class="card-tag case">图表实例</span>
+      <div class="card-title">图 21.1：三推中的尖峰和通道</div>
+      <figure class="card-figure">
+        <img src="../../resource/priceaction_trend/resources/mineru/al-brooks-vol1/AL+brooks第一卷趋势篇/auto/images/170813dfb2f943870543c9c1ebc6fefda1117626697ef33803cb917f12adbc6d.jpg" alt="图21.1 三推中的尖峰和通道" loading="lazy">
+        <figcaption>图 21.1 尖峰和通道中的三推 — Created with TradeStation</figcaption>
+      </figure>
+      <div class="highlight-box" style="margin-top:16px">
+        <div class="hl-title">逐棒分析</div>
+        <ul class="card-list">
+          <li><strong>棒5-6</strong>：开盘时的强势向上反转，很可能形成<span class="glossary">坚持到底<span class="tooltip">Always In — 市场处于明确趋势中，应该始终持有头寸</span></span>买进。棒6是多头尖峰的一部分</li>
+          <li><strong>棒6-10</strong>：通道包含三个上推，外形为<span class="glossary">楔形<span class="tooltip">Wedge — 三条趋势线逐渐收敛的形态，通常在三推后反转</span></span>。棒10在趋势通道线处过冲，向下反转</li>
+          <li><strong>棒7前一棒、棒9、棒10-11</strong>：连续的空头尖峰产生累积效应，表明市场正在从纯多头转变为双向市场</li>
+          <li><strong>棒12</strong>：对通道底部（棒7低点）的测试，是对缺口的测试——突破测试</li>
+          <li><strong>棒15</strong>：从棒10高点开始的下跌运动是一个楔形多头旗形</li>
+          <li><strong>棒21</strong>：楔形空头旗形，双重顶突破失败后的三推反转</li>
+          <li><strong>棒27</strong>：下跌至趋势通道线，与棒5和棒15形成双重底多头旗形</li>
+          <li><strong>棒31</strong>：上涨在测量运动目标处过冲，多头获利了结</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 图表实例：图21.8 -->
+    <div class="card fullwidth">
+      <span class="card-tag case">图表实例</span>
+      <div class="card-title">图 21.8：连续高潮</div>
+      <figure class="card-figure">
+        <img src="../../resource/priceaction_trend/resources/mineru/al-brooks-vol1/AL+brooks第一卷趋势篇/auto/images/1ae14a6b65ee0fa189941e5d9765f60dd0e74d62b5dda1ec2f3a6209e293a141.jpg" alt="图21.8 连续高潮" loading="lazy">
+        <figcaption>图 21.8 连续高潮 — Created with TradeStation</figcaption>
+      </figure>
+      <div class="highlight-box" style="margin-top:16px">
+        <div class="hl-title">逐棒分析</div>
+        <ul class="card-list">
+          <li><strong>棒3</strong>：空头趋势中的大型空头趋势棒，是一个卖出高潮。高潮并不意味着市场会反转，只是意味着市场走得太远、太快</li>
+          <li><strong>棒4</strong>：第二个卖出高潮，与棒3之间只有一个单棒暂停</li>
+          <li><strong>棒5</strong>：第三个连续卖出高潮，标志着空头趋势的低点</li>
+          <li><strong>关键规律</strong>：两个连续高潮后至少出现两条腿调整；三个连续高潮后反转幅度通常更大</li>
+          <li><strong>棒6-8</strong>：多头尖峰后的陡峭通道，可能是较高时间框架上的一个尖峰</li>
+          <li><strong>棒10</strong>：四棒抛物线上涨运动的终点，斜率增加后减小</li>
+          <li><strong>棒11</strong>：对通道底部的测试，是对缺口的突破测试，与棒7或棒9形成双重底多头旗形</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 模块三：通道的行为与交易 -->
+<!-- ============================================================ -->
+<section class="stage" id="sec3">
+  <div class="stage-header">
+    <span class="stage-num">模块三</span>
+    <h2 class="stage-title">通道的行为与交易</h2>
+    <p class="stage-desc">通道是倾斜的交易区间——理解通道的交易规则和常见行为模式</p>
+  </div>
+  <div class="card-grid">
+
+    <!-- 通道的交易规则 -->
+    <div class="card key-concept fullwidth">
+      <span class="card-tag rule">交易规则</span>
+      <div class="card-title">通道交易核心规则</div>
+      <p class="card-text">通道是最好的趋势交易环境之一，但需要正确的策略。以下是关键交易规则：</p>
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap:12px; margin-top:12px;">
+        <div class="rule-card">
+          <div class="rule-condition">条件：强多头通道</div>
+          <div class="rule-action">应该做：<strong>在前一棒低点下方使用限价单买进</strong></div>
+          <div class="rule-example">例：每下跌一点时入场，部分持有等待波段</div>
+        </div>
+        <div class="rule-card">
+          <div class="rule-condition">条件：通道内做空</div>
+          <div class="rule-action">应该做：<strong>在波段高点或前一棒高点上方做空，主要刮头皮</strong></div>
+          <div class="rule-example">例：在通道上轨卖出，快速获利了结</div>
+        </div>
+        <div class="rule-card">
+          <div class="rule-condition">条件：通道逆势突破</div>
+          <div class="rule-action">应该做：<strong>不要在突破时入场，等待回撤后寻找逆势入场</strong></div>
+          <div class="rule-example">例：多头通道向下突破后，等反弹至更低高点做空</div>
+        </div>
+        <div class="rule-card">
+          <div class="rule-condition">条件：通道被逆势突破</div>
+          <div class="rule-action">应该做：<strong>预期市场测试通道起点，寻找双重底/顶旗形</strong></div>
+          <div class="rule-example">例：空头通道向上突破后，回撤至通道起点附近寻找买入机会</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 通道的倾斜特性 -->
+    <div class="card key-concept">
+      <span class="card-tag concept">核心概念</span>
+      <div class="card-title">通道是反向旗形</div>
+      <p class="card-text">多头通道是空头旗形，空头通道是多头旗形。通道是较大交易区间的第一条腿。</p>
+      <blockquote class="inline-quote">
+        「通道——无论多么陡峭——都是反向旗形。多头通道是空头旗形，空头通道是多头旗形。」
+      </blockquote>
+      <p class="card-text">因为通道是一段倾斜的交易区间，反转通常会到达通道起点附近。多头通道通常是仍未展开的交易区间的第一条腿，市场通常会向下调整直到通道底部。</p>
+    </div>
+
+    <!-- 通道的紧凑性 -->
+    <div class="card key-concept">
+      <span class="card-tag concept">核心概念</span>
+      <div class="card-title">紧凑通道 vs 宽幅通道</div>
+      <p class="card-text">通道的波段宽度决定了交易策略：</p>
+      <div class="rule-card" style="margin-top:8px">
+        <div class="rule-condition">紧凑通道（大量重叠棒线）</div>
+        <div class="rule-action"><strong>仅做顺势交易</strong></div>
+        <div class="rule-example">回撤幅度不会大到令逆势交易获利</div>
+      </div>
+      <div class="rule-card" style="margin-top:8px">
+        <div class="rule-condition">宽幅通道（较大波段）</div>
+        <div class="rule-action"><strong>可以双向交易</strong></div>
+        <div class="rule-example">拥有较强的双向交易，可以在两个方向交易</div>
+      </div>
+    </div>
+
+    <!-- 疲弱通道的特征 -->
+    <div class="card key-concept orange">
+      <span class="card-tag concept">核心概念</span>
+      <div class="card-title">疲弱通道的特征</div>
+      <p class="card-text">当通道内相邻棒线之间存在大量重叠，有很多反向趋势棒，而且有几个持续几棒的回撤时，它是疲弱的通道。</p>
+      <ul class="card-list">
+        <li>通道越弱，机构逆势交易者们就越积极</li>
+        <li>强势多头/空头会随着市场运动逐步加仓</li>
+        <li>疲弱通道更容易被逆势突破</li>
+        <li>但即使疲弱通道被突破，通常也会形成至少两条腿、持续10棒以上的调整</li>
+      </ul>
+      <div class="highlight-box" style="border-color: rgba(248,81,73,0.3); background: rgba(248,81,73,0.06);">
+        <div class="hl-title" style="color: var(--accent-red);">实战警告</div>
+        <p class="card-text">在一天最后几小时内的空头通道内对多头头寸逐步加仓是非常冒险的。你可能发现自己持有一个很大的亏损头寸，被迫在收盘前认赔离场。在空头通道内寻找空头架构比设法做多更安全。</p>
+      </div>
+    </div>
+
+    <!-- 图表实例：图21.2 -->
+    <div class="card fullwidth">
+      <span class="card-tag case">图表实例</span>
+      <div class="card-title">图 21.2：尖峰和通道每天出现</div>
+      <figure class="card-figure">
+        <img src="../../resource/priceaction_trend/resources/mineru/al-brooks-vol1/AL+brooks第一卷趋势篇/auto/images/0d4bb0141a7fdac1329520b88a07dae12e4724e3732f6f227bcbb705d1718846.jpg" alt="图21.2 尖峰和通道每天出现" loading="lazy">
+        <figcaption>图 21.2 尖峰和通道每天出现 — Created with TradeStation</figcaption>
+      </figure>
+      <div class="highlight-box" style="margin-top:16px">
+        <div class="hl-title">逐棒分析</div>
+        <ul class="card-list">
+          <li><strong>3月28日</strong>：空头尖峰和通道日。棒2-4形成三棒下跌尖峰，棒8与棒6后的空头旗形顶部形成双重顶</li>
+          <li><strong>棒9-15</strong>：空头通道呈现抛物线特征（斜率增加），是高潮行为。空头在每上涨两点或超越前一棒高点时卖出</li>
+          <li><strong>棒13、15</strong>：对趋势通道线的测试，激进多头在此买进刮头皮</li>
+          <li><strong>棒17</strong>：上涨尖峰向上突破空头通道。棒17是均线缺口棒，常在较大反转前引出趋势最后一条腿</li>
+          <li><strong>棒23</strong>：楔形通道三次上推后反转，楔形空头旗形和空头反转棒形成良好卖出架构</li>
+          <li><strong>棒26</strong>：测试多头通道底部，与棒18形成双重底多头旗形</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 图表实例：图21.3 -->
+    <div class="card fullwidth">
+      <span class="card-tag case">图表实例</span>
+      <div class="card-title">图 21.3：尖峰和通道趋势很常见</div>
+      <figure class="card-figure">
+        <img src="../../resource/priceaction_trend/resources/mineru/al-brooks-vol1/AL+brooks第一卷趋势篇/auto/images/0ae8a300b68ca481982abd27a5e40dee638c2a75c3f7024fdd9bbc5f939230ac.jpg" alt="图21.3 尖峰和通道趋势很常见" loading="lazy">
+        <figcaption>图 21.3 尖峰和通道趋势很常见 — Created with TradeStation</figcaption>
+      </figure>
+      <div class="highlight-box" style="margin-top:16px">
+        <div class="hl-title">逐棒分析</div>
+        <ul class="card-list">
+          <li><strong>IBM 5分钟图</strong>：多个尖峰和通道日，较大形态可细分为较小形态——这是很常见的现象</li>
+          <li><strong>棒1-3</strong>：近乎垂直的抛物线形上涨，没有形成典型通道——是尖峰和通道趋势的变种</li>
+          <li><strong>通道起点测试</strong>：除了最后一个（棒12），每个通道起点（棒2、5、8）都得到了测试</li>
+          <li><strong>棒13</strong>：试图发起抛盘测试棒12，但很快失败，向上强势反转</li>
+          <li><strong>关键教训</strong>：通道起点常常在一两天内得到测试，务必考虑逆势架构</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 模块四：形态变种 — 抛物线、连续高潮、缺口 -->
+<!-- ============================================================ -->
+<section class="stage" id="sec4">
+  <div class="stage-header">
+    <span class="stage-num">模块四</span>
+    <h2 class="stage-title">形态变种 — 抛物线、连续高潮、缺口</h2>
+    <p class="stage-desc">尖峰和通道趋势的三种重要变种，每种都有独特的交易特征</p>
+  </div>
+  <div class="card-grid">
+
+    <!-- 对比表格 -->
+    <div class="card fullwidth">
+      <span class="card-tag summary">对比总结</span>
+      <div class="card-title">三种形态变种对比</div>
+      <div style="overflow-x:auto">
+        <table class="comparison-table">
+          <thead>
+            <tr><th>变种类型</th><th>特征</th><th>交易策略</th><th>典型图表</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>抛物线通道</strong></td>
+              <td>通道斜率不断增加，形成抛物线形状。相邻棒线重叠非常小。</td>
+              <td>高潮行为，不能持久。不要在强多头趋势中考虑做空，尽管你知道它不可能无限期持续。</td>
+              <td>图 21.4</td>
+            </tr>
+            <tr>
+              <td><strong>连续高潮</strong></td>
+              <td>多个连续的大型趋势棒（尖峰），由暂停或小幅回撤隔开。</td>
+              <td>每个高潮后通常出现两条腿调整。三个连续高潮后反转幅度更大。</td>
+              <td>图 21.8</td>
+            </tr>
+            <tr>
+              <td><strong>缺口尖峰</strong></td>
+              <td>开盘缺口在现金指数上只是一条大型趋势棒，所以缺口就是尖峰。</td>
+              <td>缺口尖峰后形成通道。通道起点会在下一天得到测试。</td>
+              <td>图 21.5</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 抛物线通道 -->
+    <div class="card key-concept">
+      <span class="card-tag concept">核心概念</span>
+      <div class="card-title">抛物线通道</div>
+      <p class="card-text">有时通道几乎垂直，市场加速形成抛物线。虽然相邻棒线重叠非常小，看起来不像一般通道，但这种抛物线运动就是通道期的变种。</p>
+      <blockquote class="inline-quote">
+        「高潮的持续时间可能比你的账户的持续时间要长，所以永远不要在这样强的多头趋势中考虑做空，尽管你知道它不可能无限期地持续下去。」
+      </blockquote>
+      <div class="highlight-box">
+        <div class="hl-title">关键理解</div>
+        <p class="card-text">当市场形成10条或更多很强的趋势棒，很少重叠且尾线很短时，交易者们正在市价买进。他们不等回撤，因为他们不确定回撤是否会出现——即使出现也会非常浅。</p>
+      </div>
+    </div>
+
+    <!-- 连续高潮 -->
+    <div class="card key-concept orange">
+      <span class="card-tag concept">核心概念</span>
+      <div class="card-title">连续高潮</div>
+      <p class="card-text">连续高潮形成尖峰和通道形态的一个变种。应该把每条大型趋势棒看作一个突破、一个尖峰和一个高潮。</p>
+      <p class="card-text">为什么连续高潮后会有较大调整？当弱势多头在任意价位退出、弱势空头在市价做空后，就没有人再在这些价位交易，市场不得不反转寻找对手方。</p>
+      <div class="rule-card" style="margin-top:8px">
+        <div class="rule-condition">条件：出现两个连续高潮</div>
+        <div class="rule-action">应该做：<strong>预期至少两条腿调整</strong></div>
+        <div class="rule-example">例：调整通常持续至少10棒</div>
+      </div>
+      <div class="rule-card" style="margin-top:8px">
+        <div class="rule-condition">条件：出现三个连续高潮</div>
+        <div class="rule-action">应该做：<strong>预期更大的反转幅度</strong></div>
+        <div class="rule-example">例：反转通常会测试第二个高潮的底部</div>
+      </div>
+    </div>
+
+    <!-- 缺口尖峰 -->
+    <div class="card key-concept green">
+      <span class="card-tag concept">核心概念</span>
+      <div class="card-title">缺口尖峰和通道日</div>
+      <p class="card-text">任何很强的竖直运动的作用都像是尖峰，所以开盘缺口也是合格的尖峰。在电子迷你出现大型开盘上涨缺口时，标普现金指数的第一棒是一条大型多头趋势棒。</p>
+      <blockquote class="inline-quote">
+        「如果接下来出现暂停或回撤，然后形成一条通道，那么这就是一个缺口尖峰和通道趋势。」
+      </blockquote>
+      <div class="highlight-box">
+        <div class="hl-title">实战要点</div>
+        <p class="card-text">大型上涨缺口日的最初5-10棒形成小型开盘区间（小于平均每日区间的30%）。这个交易日处于突破状态——向上突破时买进，向下突破时做空。如果小型区间出现在大型上涨缺口之后，形成趋势日的几率非常高。</p>
+      </div>
+    </div>
+
+    <!-- 尖峰和高潮变种 -->
+    <div class="card key-concept purple">
+      <span class="card-tag concept">核心概念</span>
+      <div class="card-title">尖峰和高潮变种</div>
+      <p class="card-text">另一种强势通道出现在尖峰和高潮趋势中：市场在尖峰后暂停，又形成另一个尖峰（而不是通道）。第二个尖峰取代了通道。</p>
+      <p class="card-text">虽然先出现通道后出现尖峰，但它的行为类似于传统的尖峰和通道形态。连续尖峰后通常会形成更大的调整，常常到达第二个尖峰的起点。</p>
+    </div>
+
+    <!-- 图表实例：图21.4 -->
+    <div class="card fullwidth">
+      <span class="card-tag case">图表实例</span>
+      <div class="card-title">图 21.4：陡峭的抛物线形通道</div>
+      <figure class="card-figure">
+        <img src="../../resource/priceaction_trend/resources/mineru/al-brooks-vol1/AL+brooks第一卷趋势篇/auto/images/7600da7895bcb85de0261da40c89ebf6f945bab7a298d88e00fa3512be01aa11.jpg" alt="图21.4 陡峭的抛物线形通道" loading="lazy">
+        <figcaption>图 21.4 陡峭的抛物线形通道 — Created with TradeStation</figcaption>
+      </figure>
+      <div class="highlight-box" style="margin-top:16px">
+        <div class="hl-title">逐棒分析</div>
+        <ul class="card-list">
+          <li><strong>棒1</strong>：强多头突破棒，向上突破昨日收盘空头通道和均线。几乎在低点开盘，是一个多头尖峰</li>
+          <li><strong>棒2</strong>：第二个多头尖峰——连续买进高潮。之后出现向均线的八棒回撤</li>
+          <li><strong>棒3</strong>：测试棒1后回撤的低点，形成双重底多头旗形</li>
+          <li><strong>棒8-9</strong>：四条大小一致的多头趋势棒，包含在微型通道内。这种力量之后几乎肯定是更高价格</li>
+          <li><strong>棒12</strong>：第一次尝试令通道反转，很可能失败</li>
+          <li><strong>棒15</strong>：延长趋势终点处的大型多头趋势棒，可能是买进真空。强势多头和空头在此卖出</li>
+          <li><strong>关键教训</strong>：抛物线运动不能持久，但高潮持续时间可能比你的账户持续时间要长</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 图表实例：图21.5 -->
+    <div class="card fullwidth">
+      <span class="card-tag case">图表实例</span>
+      <div class="card-title">图 21.5：缺口尖峰和通道日</div>
+      <figure class="card-figure">
+        <img src="../../resource/priceaction_trend/resources/mineru/al-brooks-vol1/AL+brooks第一卷趋势篇/auto/images/3c6a77a5f09bc41f9fb78a5c6797658591914eb85b781484dcc9ca7656b1f358.jpg" alt="图21.5 缺口尖峰和通道日" loading="lazy">
+        <figcaption>图 21.5 缺口尖峰和通道日 — Created with TradeStation</figcaption>
+      </figure>
+      <div class="highlight-box" style="margin-top:16px">
+        <div class="hl-title">逐棒分析</div>
+        <ul class="card-list">
+          <li><strong>左侧标普现金指数</strong>：上涨缺口在现金指数上只是一条大型多头趋势棒（上涨尖峰）</li>
+          <li><strong>右侧电子迷你</strong>：缺口就是一条大型趋势棒——缺口尖峰和通道日</li>
+          <li><strong>通道起点棒2</strong>：在下一天（棒4）得到测试</li>
+          <li><strong>棒3</strong>：上升通道正在失去动能，开始向下弯曲形成圆形顶</li>
+          <li><strong>棒1-2</strong>：多头旗形引出通道，作用也像一个最终旗形</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 图表实例：图21.10 -->
+    <div class="card fullwidth">
+      <span class="card-tag case">图表实例</span>
+      <div class="card-title">图 21.10：尖峰和高潮</div>
+      <figure class="card-figure">
+        <img src="../../resource/priceaction_trend/resources/mineru/al-brooks-vol1/AL+brooks第一卷趋势篇/auto/images/30f9237858187d17a1f8718113193618ccaaa15c7c8f8220132e1dd9969452f7.jpg" alt="图21.10 尖峰和高潮" loading="lazy">
+        <figcaption>图 21.10 尖峰和高潮 — Created with TradeStation</figcaption>
+      </figure>
+      <div class="highlight-box" style="margin-top:16px">
+        <div class="hl-title">逐棒分析</div>
+        <ul class="card-list">
+          <li><strong>棒2-3通道</strong>：上升通道就像上涨尖峰</li>
+          <li><strong>棒3后单棒</strong>：大型多头趋势棒，就像通道——形成尖峰和高潮变种</li>
+          <li><strong>棒4-5</strong>：棒4是单棒最终旗形，棒5从高点向下反转——最终旗形反转</li>
+          <li><strong>棒6</strong>：高点1信号棒，上涨尖峰非常迅猛是高潮，高点1很可能失败</li>
+          <li><strong>棒8</strong>：楔形多头旗形（高点3），合理刮头皮机会，但可能有第二条下跌腿</li>
+          <li><strong>棒11</strong>：向下突破后市场反转进入<span class="glossary">总在场内<span class="tooltip">Always In — 市场处于明确趋势中，应该始终持有头寸</span></span>空头状态</li>
+          <li><strong>棒5-12-18-26</strong>：三次下推形成抛物线形高潮通道</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 模块五：测量运动与目标位 -->
+<!-- ============================================================ -->
+<section class="stage" id="sec5">
+  <div class="stage-header">
+    <span class="stage-num">模块五</span>
+    <h2 class="stage-title">测量运动与目标位</h2>
+    <p class="stage-desc">如何基于尖峰计算测量运动目标，理解50%概率理论</p>
+  </div>
+  <div class="card-grid">
+
+    <!-- 原文金句：测量运动 -->
+    <div class="card key-concept fullwidth">
+      <span class="card-tag concept">原文金句</span>
+      <div class="card-title">测量运动的基础</div>
+      <blockquote class="original-quote">
+        <p>「当突破很强时，它常常会成为一波测量运动的基础。如果尖峰很大，一波测量运动的目标是从尖峰第一棒的开盘价或最低价到尖峰最后一棒的收盘价或最高价，那么就预期出现同样点数的上涨。另一个测量运动目标是腿1=腿2运动，其中尖峰是腿1，通道是腿2。」</p>
+        <cite>— Al Brooks, 第21章 第331页</cite>
+      </blockquote>
+      <div class="highlight-box">
+        <div class="hl-title">深度解读</div>
+        <p class="card-text">两种测量方法：(1) 尖峰幅度投射——尖峰第一棒低点到最后一棒高点的幅度，加到高点上；(2) 腿1=腿2——尖峰是腿1，通道是腿2，通道的终点应该与尖峰的幅度相等。两种方法给出的目标位通常接近。</p>
+      </div>
+    </div>
+
+    <!-- 测量运动计算器 -->
+    <div class="card fullwidth">
+      <span class="card-tag rule">交互工具</span>
+      <div class="card-title">测量运动计算器</div>
+      <p class="card-text">输入尖峰的低点和高点价格，计算测量运动目标位。</p>
+      <div class="calculator">
+        <div class="calc-row">
+          <div class="calc-field">
+            <label>尖峰低点（第一棒低点/开盘价）</label>
+            <input type="number" id="spike-low" value="100" step="0.25">
+          </div>
+          <div class="calc-field">
+            <label>尖峰高点（最后一棒高点/收盘价）</label>
+            <input type="number" id="spike-high" value="105" step="0.25">
+          </div>
+          <div class="calc-field" style="min-width:auto; flex:0;">
+            <label>&nbsp;</label>
+            <button class="calc-btn" onclick="calcMeasuredMove()">计算</button>
+          </div>
+        </div>
+        <div class="calc-results" id="calc-results" style="display:none">
+          <div class="calc-result-row">
+            <span class="calc-result-label">尖峰幅度</span>
+            <span class="calc-result-value" id="res-range"></span>
+          </div>
+          <div class="calc-result-row">
+            <span class="calc-result-label">测量运动目标（高点 + 幅度）</span>
+            <span class="calc-result-value" id="res-target1"></span>
+          </div>
+          <div class="calc-result-row">
+            <span class="calc-result-label">腿1=腿2 目标</span>
+            <span class="calc-result-value" id="res-target2"></span>
+          </div>
+          <div class="calc-result-row">
+            <span class="calc-result-label">50%中点（交易区间中心）</span>
+            <span class="calc-result-value" id="res-midpoint"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 50%概率理论 -->
+    <div class="card key-concept">
+      <span class="card-tag concept">核心概念</span>
+      <div class="card-title">50%概率理论</div>
+      <p class="card-text">市场越过新价位后回撤成为交易区间。在交易区间中部，等距离运动的方向概率大约是50%。</p>
+      <blockquote class="inline-quote">
+        「市场为什么做趋势运动并不重要。重要的是它在快速运动。你可以把那种运动看作突破、远离先前某个价位的运动、或者向某个磁力位的运动。」
+      </blockquote>
+      <div class="highlight-box">
+        <div class="hl-title">关键理解</div>
+        <p class="card-text">一旦方向概率回到50%，交易区间就会变得非常明显。趋势只是从一个交易区间向另一个交易区间的运动。在新的交易区间内，多空双方都在试图在他们所认为的下一个突破方向上建仓。</p>
+      </div>
+    </div>
+
+    <!-- 通道的持续时间 -->
+    <div class="card key-concept">
+      <span class="card-tag concept">核心概念</span>
+      <div class="card-title">通道能走多远？</div>
+      <p class="card-text">在强趋势中，通道通常比大多数交易者所认为的要远得多。但测量运动目标是很好的获利了结区。</p>
+      <ul class="card-list">
+        <li>测量运动目标和其他阻力区中的大多数都将失败，尤其是当趋势非常强劲时</li>
+        <li>寻找它们仍然很重要，因为当反转最后真的形成时，通常是在这些阻力区中的某一个</li>
+        <li>经验丰富的交易者常常在测量运动目标处做逆势刮头皮，但很少有交易者会一致获利</li>
+        <li>如果尝试逆势刮头皮，大部分人都是赔钱的</li>
+      </ul>
+    </div>
+
+    <!-- 图表实例：图21.6 -->
+    <div class="card fullwidth">
+      <span class="card-tag case">图表实例</span>
+      <div class="card-title">图 21.6：陡峭通道是尖峰</div>
+      <figure class="card-figure">
+        <img src="../../resource/priceaction_trend/resources/mineru/al-brooks-vol1/AL+brooks第一卷趋势篇/auto/images/4f7c6ae6d286f218daedfbb7eddc59c73726b57063be59878905470f799fb36c.jpg" alt="图21.6 陡峭通道是尖峰" loading="lazy">
+        <figcaption>图 21.6 陡峭通道是尖峰 — Created with TradeStation</figcaption>
+      </figure>
+      <div class="highlight-box" style="margin-top:16px">
+        <div class="hl-title">逐棒分析</div>
+        <ul class="card-list">
+          <li><strong>右侧5分钟图</strong>：从棒8到棒10的通道非常陡峭，没有回撤测试通道起点</li>
+          <li><strong>左侧60分钟图</strong>：整个尖峰和通道形态只是60分钟图上的一个尖峰</li>
+          <li><strong>关键教训</strong>：陡峭的通道在较高时间框架上只是尖峰——不同时间框架的形态可以完全不同</li>
+          <li><strong>棒4</strong>：从多头趋势开盘起的突破回撤做多信号</li>
+          <li><strong>棒8三棒下跌</strong>：下跌尖峰可能引出下跌通道测试上升通道起点，但多头趋势太强</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 图表实例：图21.7 -->
+    <div class="card fullwidth">
+      <span class="card-tag case">图表实例</span>
+      <div class="card-title">图 21.7：通道可能在尖峰结束之后很长时间才出现</div>
+      <figure class="card-figure">
+        <img src="../../resource/priceaction_trend/resources/mineru/al-brooks-vol1/AL+brooks第一卷趋势篇/auto/images/585f78db9aa7f859a3f73e963b004f709d3617f45654b247aee628e7fb062adb.jpg" alt="图21.7 通道可能在尖峰结束之后很长时间才出现" loading="lazy">
+        <figcaption>图 21.7 通道可能在尖峰结束之后很长时间才出现 — Created with TradeStation</figcaption>
+      </figure>
+      <div class="highlight-box" style="margin-top:16px">
+        <div class="hl-title">逐棒分析</div>
+        <ul class="card-list">
+          <li><strong>棒1-2</strong>：下跌运动看起来像尖峰，但棒1是尖峰，棒2的四棒下跌是通道（在较小时间框架上更清楚）</li>
+          <li><strong>棒9</strong>：更高高点后下跌通道开始——有时从尖峰开始的回撤会越过尖峰起点，然后通道才开始</li>
+          <li><strong>棒9-11</strong>：下跌通道的第一部分本身也是一个尖峰</li>
+          <li><strong>关键教训</strong>：理解尖峰和通道的微妙变化，可以调整交易胜率评估，发现更多交易机会</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 图表实例：图21.9 -->
+    <div class="card fullwidth">
+      <span class="card-tag case">图表实例</span>
+      <div class="card-title">图 21.9：上涨缺口和双重底</div>
+      <figure class="card-figure">
+        <img src="../../resource/priceaction_trend/resources/mineru/al-brooks-vol1/AL+brooks第一卷趋势篇/auto/images/5ad0717b6ac29807fdbe85cf8c78dee5516dbaee04472a12c6c74a4236491805.jpg" alt="图21.9 上涨缺口和双重底" loading="lazy">
+        <figcaption>图 21.9 上涨缺口和双重底 — Created with TradeStation</figcaption>
+      </figure>
+      <div class="highlight-box" style="margin-top:16px">
+        <div class="hl-title">逐棒分析</div>
+        <ul class="card-list">
+          <li><strong>开盘缺口</strong>：大型上涨缺口后小型开盘区间（小于平均每日区间30%）——突破状态</li>
+          <li><strong>棒4</strong>：外包上涨棒形成双重底，有些交易者在超越前一棒高点时做多</li>
+          <li><strong>棒5</strong>：突破回撤买进架构，向上突破棒3和棒4双重底</li>
+          <li><strong>棒5-6前一棒</strong>：很强的多头尖峰，市场横盘调整至棒9</li>
+          <li><strong>棒9-10</strong>：买进高潮完成尖峰和高潮型的尖峰和通道多头趋势</li>
+          <li><strong>棒11</strong>：强势空头尖峰，市场可能进入横盘——多空双方争夺通道方向</li>
+          <li><strong>棒12-13</strong>：更低高点双重顶后下跌，棒13是多头趋势棒但套住多头</li>
+          <li><strong>关键教训</strong>：交易区间内常出现下跌和上涨尖峰，把市场推向突破状态</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 模块六：总结与自测 -->
+<!-- ============================================================ -->
+<section class="stage" id="sec6">
+  <div class="stage-header">
+    <span class="stage-num">模块六</span>
+    <h2 class="stage-title">实战总结与自测</h2>
+    <p class="stage-desc">回顾核心规则，检验你对尖峰和通道趋势的理解</p>
+  </div>
+  <div class="card-grid">
+
+    <!-- 总结卡片 -->
+    <div class="card key-concept fullwidth">
+      <span class="card-tag summary">核心总结</span>
+      <div class="card-title">尖峰和通道趋势 — 必须记住的规则</div>
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap:12px; margin-top:12px;">
+        <div class="rule-card">
+          <div class="rule-condition">规则1</div>
+          <div class="rule-action"><strong>尖峰 = 突破 = 缺口 = 高潮</strong></div>
+          <div class="rule-example">这四个概念是等价的</div>
+        </div>
+        <div class="rule-card">
+          <div class="rule-condition">规则2</div>
+          <div class="rule-action"><strong>尖峰在第一条暂停棒处结束</strong></div>
+          <div class="rule-example">之后趋势恢复、进入交易区间、或反转</div>
+        </div>
+        <div class="rule-card">
+          <div class="rule-condition">规则3</div>
+          <div class="rule-action"><strong>通道是倾斜的交易区间</strong></div>
+          <div class="rule-example">多头通道是空头旗形，反之亦然</div>
+        </div>
+        <div class="rule-card">
+          <div class="rule-condition">规则4</div>
+          <div class="rule-action"><strong>通道极少顺势突破</strong></div>
+          <div class="rule-example">突破通常在五棒内失败</div>
+        </div>
+        <div class="rule-card">
+          <div class="rule-condition">规则5</div>
+          <div class="rule-action"><strong>通道在测量运动目标处结束</strong></div>
+          <div class="rule-example">常常在第三推结束</div>
+        </div>
+        <div class="rule-card">
+          <div class="rule-condition">规则6</div>
+          <div class="rule-action"><strong>不要在通道内做逆势交易</strong></div>
+          <div class="rule-example">通道的紧凑性使逆势策略失败</div>
+        </div>
+        <div class="rule-card">
+          <div class="rule-condition">规则7</div>
+          <div class="rule-action"><strong>通道起点通常会被测试</strong></div>
+          <div class="rule-example">在一两天内测试，形成双重底/顶旗形</div>
+        </div>
+        <div class="rule-card">
+          <div class="rule-condition">规则8</div>
+          <div class="rule-action"><strong>连续高潮后至少两条腿调整</strong></div>
+          <div class="rule-example">三个高潮后反转幅度更大</div>
+        </div>
+        <div class="rule-card">
+          <div class="rule-condition">规则9</div>
+          <div class="rule-action"><strong>测量运动目标是获利了结区</strong></div>
+          <div class="rule-example">不是好的反转入场点</div>
+        </div>
+        <div class="rule-card">
+          <div class="rule-condition">规则10</div>
+          <div class="rule-action"><strong>通道越弱，逆势交易者越积极</strong></div>
+          <div class="rule-example">大量重叠 = 机构在逆势加仓</div>
+        </div>
+        <div class="rule-card">
+          <div class="rule-condition">规则11</div>
+          <div class="rule-action"><strong>50%概率在交易区间中部</strong></div>
+          <div class="rule-example">趋势只是区间之间的运动</div>
+        </div>
+        <div class="rule-card">
+          <div class="rule-condition">规则12</div>
+          <div class="rule-action"><strong>尖峰具有累积效应</strong></div>
+          <div class="rule-example">多个逆势尖峰=市场正在转变</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 术语表 -->
+    <div class="card fullwidth">
+      <span class="card-tag summary">术语表</span>
+      <div class="card-title">常用术语对照</div>
+      <div style="overflow-x:auto">
+        <table class="comparison-table">
+          <thead>
+            <tr><th>术语</th><th>英文</th><th>定义</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>尖峰</td><td>Spike</td><td>一组强劲的K线，通常是对突破的反应，形成急剧的价格运动</td></tr>
+            <tr><td>通道</td><td>Channel</td><td>倾斜的交易区间，价格在两条平行线之间波动</td></tr>
+            <tr><td>逃逸缺口</td><td>Runaway Gap</td><td>趋势中途出现的缺口，表示趋势加速，通常不会被快速回补</td></tr>
+            <tr><td>总在场内</td><td>Always In</td><td>市场处于明确趋势中，应该始终持有头寸</td></tr>
+            <tr><td>交易区间</td><td>Trading Range</td><td>价格在水平边界内波动，多空力量均衡</td></tr>
+            <tr><td>突破</td><td>Breakout</td><td>价格突破重要的高点或低点</td></tr>
+            <tr><td>回调</td><td>Pullback</td><td>趋势中的反向运动，是对趋势的测试</td></tr>
+            <tr><td>测量运动</td><td>Measured Move</td><td>基于前期价格运动幅度预测目标位</td></tr>
+            <tr><td>信号棒</td><td>Signal Bar</td><td>发出交易信号的特定K线形态</td></tr>
+            <tr><td>入场棒</td><td>Entry Bar</td><td>实际触发入场的K线</td></tr>
+            <tr><td>高潮</td><td>Climax</td><td>趋势末端的极端价格运动，通常伴随成交量放大</td></tr>
+            <tr><td>双顶/双底</td><td>Double Top/Bottom</td><td>两次测试同一价格水平后反转</td></tr>
+            <tr><td>楔形</td><td>Wedge</td><td>三条趋势线逐渐收敛的形态</td></tr>
+            <tr><td>头肩顶/底</td><td>Head & Shoulders</td><td>中间高点两侧各一个较低高点的反转形态</td></tr>
+            <tr><td>均线</td><td>Moving Average</td><td>价格的平均值连线，常用20期EMA</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 测验 -->
+    <div class="card fullwidth">
+      <span class="card-tag quiz">知识测验</span>
+      <div class="card-title">检验你的理解</div>
+      <div class="quiz-progress" id="quiz-progress">第 1/10 题</div>
+      <div id="quiz-container"></div>
+    </div>
+
+  </div>
+</section>
+
+</div><!-- /container -->
+
+<!-- ===== Lightbox ===== -->
+<div id="lightbox">
+  <img id="lightbox-img" src="" alt="放大查看">
+</div>
+
+<!-- ===== Progress Bar ===== -->
+<div class="progress-bar-container">
+  <div class="progress-bar-fill" id="progress-fill"></div>
+</div>
+
+<!-- ===== JavaScript ===== -->
+<script>
+// ===== Lightbox =====
+const lightbox = document.getElementById('lightbox');
+const lightboxImg = document.getElementById('lightbox-img');
+document.querySelectorAll('.card-figure img').forEach(img => {
+  img.addEventListener('click', () => {
+    lightboxImg.src = img.src;
+    lightbox.classList.add('active');
+  });
+});
+lightbox.addEventListener('click', () => lightbox.classList.remove('active'));
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') lightbox.classList.remove('active');
+});
+
+// ===== Expandable Cards =====
+function toggleExpand(card) {
+  if (!card.classList.contains('expandable')) return;
+  card.classList.toggle('open');
+}
+
+// ===== Nav Scroll Highlight =====
+const sections = document.querySelectorAll('.stage');
+const navLinks = document.querySelectorAll('.header-nav a');
+function updateNav() {
+  let current = '';
+  sections.forEach(section => {
+    if (section.getBoundingClientRect().top <= 150) current = section.id;
+  });
+  navLinks.forEach(link => {
+    link.classList.remove('active');
+    if (link.getAttribute('href') === '#' + current) link.classList.add('active');
+  });
+}
+window.addEventListener('scroll', updateNav);
+
+// ===== Progress Bar =====
+window.addEventListener('scroll', () => {
+  const scrollTop = window.scrollY;
+  const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+  const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+  document.getElementById('progress-fill').style.width = progress + '%';
+});
+
+// ===== Measured Move Calculator =====
+function calcMeasuredMove() {
+  const low = parseFloat(document.getElementById('spike-low').value);
+  const high = parseFloat(document.getElementById('spike-high').value);
+  if (isNaN(low) || isNaN(high) || low >= high) return;
+  const range = high - low;
+  document.getElementById('res-range').textContent = range.toFixed(2);
+  document.getElementById('res-target1').textContent = (high + range).toFixed(2);
+  document.getElementById('res-target2').textContent = (high + range).toFixed(2);
+  document.getElementById('res-midpoint').textContent = (low + range / 2).toFixed(2);
+  document.getElementById('calc-results').style.display = 'block';
+}
+
+// ===== Quiz Engine =====
+const quizData = [
+  {
+    q: '以下关于尖峰的描述，哪个是正确的？',
+    options: [
+      '尖峰只能由多条趋势棒构成',
+      '尖峰只在盘中形成，不会在开盘时出现',
+      '尖峰、突破、缺口和高潮是四个等价的概念',
+      '尖峰出现后市场一定会反转'
+    ],
+    correct: 2,
+    explanation: 'Al Brooks明确指出："应该认为尖峰，高潮和突破是相同的。"这四个概念在价格行为学中是等价的，是理解趋势的关键。'
+  },
+  {
+    q: '通道极少会怎样？',
+    options: [
+      '通道极少会持续超过10棒',
+      '通道极少会顺势突破',
+      '通道极少会形成三推',
+      '通道极少会在测量运动目标处结束'
+    ],
+    correct: 1,
+    explanation: '原文明确指出："通道极少会顺势突破，但是，当顺势突破出现时，突破通常会在五棒内失败，然后市场反转。"这是本章最重要的规则之一。'
+  },
+  {
+    q: '在一个强多头通道内，你应该怎样交易？',
+    options: [
+      '在通道顶部买入，期待突破',
+      '在前一棒低点下方使用限价单买入',
+      '在通道内做空，等待反转',
+      '等待通道完全结束后再入场'
+    ],
+    correct: 1,
+    explanation: '原文指出："在多头通道内，最好在前一棒的低点下方买进，部分持有，等待波段。"这是通道交易的标准策略。'
+  },
+  {
+    q: '连续三个卖出高潮后，市场通常会怎样？',
+    options: [
+      '继续下跌，因为趋势很强',
+      '横盘整理，形成交易区间',
+      '出现更大的反转幅度',
+      '立即反弹到高潮起点'
+    ],
+    correct: 2,
+    explanation: '原文指出："当出现三个连续高潮时，反转幅度通常会更大。"连续高潮代表极端情绪化交易，一旦弱势交易者完成交易，市场就失去了推动力。'
+  },
+  {
+    q: '多头通道在价格行为学中等价于什么？',
+    options: [
+      '多头旗形',
+      '空头旗形',
+      '交易区间的突破',
+      '楔形反转'
+    ],
+    correct: 1,
+    explanation: '原文明确指出："多头通道是空头旗形，空头通道是多头旗形。"通道是反向旗形，这意味着它们通常会在相反方向突破。'
+  },
+  {
+    q: '测量运动目标最好的用途是什么？',
+    options: [
+      '作为反转交易的入场点',
+      '作为止损位的参考',
+      '作为获利了结区',
+      '作为加仓的位置'
+    ],
+    correct: 2,
+    explanation: '原文指出："把测量运动目标作为获利了结区，要比作为反转交易入场区好得多。"虽然测量运动目标处可能形成反转，但需要非常强的架构才能做反转交易。'
+  },
+  {
+    q: '当通道被逆势突破时，你应该怎么做？',
+    options: [
+      '立即在突破方向入场',
+      '等待回撤后寻找逆势入场机会',
+      '忽略突破，继续顺势交易',
+      '在突破点设置限价单'
+    ],
+    correct: 1,
+    explanation: '原文指出："如果通道逆势突破，通常最终是逆势突破，那么不要在突破时入场，而是等待回撤。"例如多头通道向下突破后，等反弹至更低高点做空。'
+  },
+  {
+    q: '在交易区间中部，等距离运动的方向概率大约是多少？',
+    options: [
+      '60%偏向原趋势方向',
+      '50%左右',
+      '70%偏向反转方向',
+      '40%偏向原趋势方向'
+    ],
+    correct: 1,
+    explanation: '原文指出："在交易区间中部，等距离运动的方向概率大约是50%。也就是说市场下跌X点和上涨X点的几率大致相同。"这是交易区间的核心特征。'
+  },
+  {
+    q: '尖峰通常在什么时候形成？',
+    options: [
+      '在一天的中间时段',
+      '在收盘前的最后一小时',
+      '在第一个小时内，常常是当天一开始的几棒内',
+      '在午休之后'
+    ],
+    correct: 2,
+    explanation: '原文指出："尖峰通常在第一个小时内形成，而且常常是在当天一开始的几棒内。"开盘头几棒的强劲运动往往是全天趋势的起点。'
+  },
+  {
+    q: '为什么通道起点通常会被测试？',
+    options: [
+      '因为市场总是要回到开盘价',
+      '因为空头要测试多头的入场价位',
+      '因为通道是交易区间的第一条腿，反转通常到达通道起点附近',
+      '因为均线会吸引价格'
+    ],
+    correct: 2,
+    explanation: '原文指出："通道是一段倾斜的交易区间，同时也是较大交易区间的第一条腿，所以反转通常会到达通道起点附近。"通道起点的测试形成了双重底/顶旗形。'
+  }
+];
+
+let currentQ = 0, score = 0, answered = [];
+
+function renderQuiz() {
+  const container = document.getElementById('quiz-container');
+  if (currentQ >= quizData.length) {
+    showScore();
+    return;
+  }
+  const q = quizData[currentQ];
+  document.getElementById('quiz-progress').textContent = `第 ${currentQ + 1}/${quizData.length} 题`;
+  let html = `<div class="quiz-card">
+    <div class="quiz-question">${q.q}</div>
+    <div class="quiz-options">`;
+  q.options.forEach((opt, i) => {
+    html += `<div class="quiz-option" onclick="answerQuiz(${currentQ}, ${i})" id="opt-${currentQ}-${i}">
+      <div class="radio"></div>
+      <span>${opt}</span>
+    </div>`;
+  });
+  html += `</div>
+    <div class="quiz-explanation" id="expl-${currentQ}"></div>
+  </div>`;
+  container.innerHTML = html;
+}
+
+function answerQuiz(qi, oi) {
+  if (answered.includes(qi)) return;
+  answered.push(qi);
+  const q = quizData[qi];
+  const isCorrect = oi === q.correct;
+  if (isCorrect) score++;
+
+  // Mark options
+  document.getElementById(`opt-${qi}-${q.correct}`).classList.add('correct');
+  if (!isCorrect) document.getElementById(`opt-${qi}-${oi}`).classList.add('wrong');
+
+  // Show explanation
+  const expl = document.getElementById(`expl-${qi}`);
+  expl.textContent = (isCorrect ? '✓ 正确！' : '✗ 错误。') + ' ' + q.explanation;
+  expl.className = 'quiz-explanation show ' + (isCorrect ? 'correct-bg' : 'wrong-bg');
+
+  // Next question
+  setTimeout(() => {
+    currentQ++;
+    renderQuiz();
+  }, 1500);
+}
+
+function showScore() {
+  const container = document.getElementById('quiz-container');
+  document.getElementById('quiz-progress').textContent = '测验完成';
+  let comment = '';
+  const pct = score / quizData.length;
+  if (pct >= 0.9) comment = '出色！你对尖峰和通道趋势有深入的理解。';
+  else if (pct >= 0.7) comment = '不错！你掌握了大部分核心概念。';
+  else if (pct >= 0.5) comment = '还需努力。建议回顾相关模块的内容。';
+  else comment = '建议重新学习本章内容，特别关注核心定义和交易规则。';
+
+  container.innerHTML = `<div class="quiz-score">
+    <div class="score-num">${score}/${quizData.length}</div>
+    <div class="score-label">${comment}</div>
+    <button class="quiz-reset-btn" onclick="resetQuiz()">重新测验</button>
+  </div>`;
+}
+
+function resetQuiz() {
+  currentQ = 0; score = 0; answered = [];
+  renderQuiz();
+}
+
+// Initialize quiz
+renderQuiz();
+</script>
+
+</body>
+</html>
